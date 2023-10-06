@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Price Checker</title>
+</head>
+<body>
+    <h1>Crypto Price Checker</h1>
+    <p>Enter the name of a cryptocurrency:</p>
+    <input type="text" id="coinName" placeholder="e.g., bitcoin">
+    <button onclick="getCryptoPrice()">Get Price</button>
+    <p id="result"></p>
+
+    <script>
+        function getCryptoPrice() {
+            const coinName = document.getElementById('coinName').value;
+            const apiUrl = `http://crypto_connector:9000/crypto/beta/price/${coinName}`;
+
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const resultElement = document.getElementById('result');
+                    resultElement.textContent = `Price of ${coinName.toUpperCase()} in USD: $${data.price}`;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const resultElement = document.getElementById('result');
+                    resultElement.textContent = 'Error fetching data. Please try again.';
+                });
+        }
+    </script>
+</body>
+</html>
