@@ -1,7 +1,7 @@
 FROM nginx:1.25.3
 #MAINTAINER Jonathan Arrance <jonathan@thesingleboard.io>
 
-ENV INSTALL_PATH /opt/homebot
+ENV INSTALL_PATH /opt/crypto
 
 RUN apt-get update -y;apt-get install -y curl;apt-get install -y python;apt install -y sqlite3;apt-get install -y python3-pip;apt install -y python3-dev;apt install -y vim;apt install -y htop
 
