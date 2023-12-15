@@ -1,1 +1,2 @@
-# Coinbaseconnector
+# Coinbasecollector
+

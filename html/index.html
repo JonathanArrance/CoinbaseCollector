@@ -15,7 +15,7 @@
     <script>
         function getCryptoPrice() {
             const coinName = document.getElementById('coinName').value;
-            const apiUrl = `http://crypto_connector:9000/crypto/beta/price/${coinName}`;
+            const apiUrl = `http://crypto_connector:9029/crypto/beta/price/${coinName}`;
 
             fetch(apiUrl)
                 .then(response => {

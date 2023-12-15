@@ -1,2 +1,2 @@
 #!/bin/bash -x
-docker build --no-cache -t crypto_connector ./src/
+docker build --no-cache -t coinbase_collector ./src/

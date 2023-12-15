@@ -1,10 +1,10 @@
 #!/bin/python
 import settings
-import os
 import logging
 from crypto_lib import Crypto
 #import random
 #import hashlib
+#import os
 
 #API Stuff
 from flask import Flask, abort, jsonify, request
@@ -22,8 +22,8 @@ application.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 application.config['DEBUG'] = True
 application.wsgi_app = ProxyFix(application.wsgi_app)
 
-restxapi = Api(application,version=settings.APIVER, title='Internal API',
-    description='An API used for my applications.',)
+restxapi = Api(application,version=settings.APIVER, title='Action API',
+    description='An API used to interact with Coinbase from Grafana.',)
 
 #Enable logging
 logging.basicConfig(level=logging.DEBUG)
@@ -34,6 +34,36 @@ parser = reqparse.RequestParser()
 ns1 = restxapi.namespace('crypto/'+apiver, description='Crypto API endpoints')
 
 cr = Crypto()
+
+@ns1.route('/listcoins')
+class CryptoPrice(Resource):
+    #@auth.login_required
+    def get(self,coin):
+        pass
+
+@ns1.route('/getcoin/<coin>')
+class CryptoPrice(Resource):
+    #@auth.login_required
+    def get(self,coin):
+        pass
+
+@ns1.route('/sell/<coin>')
+class CryptoPrice(Resource):
+    #@auth.login_required
+    def post(self,coin):
+        pass
+
+@ns1.route('/buy/<coin>')
+class CryptoPrice(Resource):
+    #@auth.login_required
+    def post(self,coin):
+        pass
+
+@ns1.route('/addcoin/<coin>')
+class CryptoPrice(Resource):
+    #@auth.login_required
+    def post(self,coin):
+        pass
 
 @ns1.route('/price/<coin>')
 class CryptoPrice(Resource):
@@ -60,4 +90,4 @@ class CryptoPrice(Resource):
 if __name__ == '__main__':
 
     #application.run(host='0.0.0.0',port=9000, debug=True,ssl_context='adhoc)
-    application.run(host='0.0.0.0',port=9000, debug=True)
+    application.run(host='0.0.0.0',port=9030, debug=True)

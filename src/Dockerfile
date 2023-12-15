@@ -1,5 +1,5 @@
-FROM nginx
-MAINTAINER Jonathan Arrance <jonathan@thesingleboard.io>
+FROM nginx:1.25.3
+#MAINTAINER Jonathan Arrance <jonathan@thesingleboard.io>
 
 ENV INSTALL_PATH /opt/homebot
 
