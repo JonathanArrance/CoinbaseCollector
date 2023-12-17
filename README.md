@@ -1,4 +1,4 @@
-# Coinbaseconnector
+# CoinbaseConnector
 
 ## Overview
 

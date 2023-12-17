@@ -18,8 +18,8 @@ def main():
         #emit the prom database
         pr.bitcoin_price(btc)
         pr.etherium_price(eth)
-        data.write_to_db(btc)
-        data.write_to_db(eth)
+        data.write_to_history(btc)
+        data.write_to_history(eth)
         time.sleep(settings.COINBASE_INTERVAL)
 
 if __name__ == '__main__':

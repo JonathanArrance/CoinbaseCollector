@@ -6,8 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
+#internal
 /db
 /ssl
+env.sh
+
 
 # Distribution / packaging
 .Python
