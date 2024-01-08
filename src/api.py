@@ -36,31 +36,31 @@ ns1 = restxapi.namespace('crypto/'+apiver, description='Crypto API endpoints')
 cr = Crypto()
 
 @ns1.route('/listcoins')
-class CryptoPrice(Resource):
+class ListCoins(Resource):
     #@auth.login_required
     def get(self,coin):
         pass
 
 @ns1.route('/getcoin/<coin>')
-class CryptoPrice(Resource):
+class GetCoins(Resource):
     #@auth.login_required
     def get(self,coin):
         pass
 
 @ns1.route('/sell/<coin>')
-class CryptoPrice(Resource):
+class SellCoin(Resource):
     #@auth.login_required
     def post(self,coin):
         pass
 
 @ns1.route('/buy/<coin>')
-class CryptoPrice(Resource):
+class BuyCoin(Resource):
     #@auth.login_required
     def post(self,coin):
         pass
 
 @ns1.route('/addcoin/<coin>')
-class CryptoPrice(Resource):
+class AddCoin(Resource):
     #@auth.login_required
     def post(self,coin):
         pass

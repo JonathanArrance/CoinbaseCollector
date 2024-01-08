@@ -16,6 +16,8 @@ class Crypto:
         else:
             coin = coin.capitalize()
 
+        price = bid = ask = volume = None
+
         try:
             # Make a GET request to the API
             response = requests.get(url)
@@ -25,8 +27,10 @@ class Crypto:
                 # Parse the response JSON to get the price
                 data = response.json()
                 price = float(data["price"])
+                bid = float(data["bid"])
+                ask = float(data["ask"])
+                volume = float(data["volume"])
 
-                # Print the Ethereum price
                 print(f"Current {coin} Price: ${price:.2f}")
             else:
                 print(f"Error: Unable to fetch data. Status code: {response.status_code}")
@@ -35,10 +39,9 @@ class Crypto:
             print(f"An error occurred: {e}")
             price ="0.00"
 
-        return({'coin':coin,'timestamp':time.time(),'price':price})
+        return({'coin':coin,'timestamp':time.time(),'price':price,'bid':bid,'ask':ask,'volume':volume})
 
     def get_eth_price(self):
-        # Coinbase Pro API endpoint for Ethereum (ETH) price
         url = "https://api.pro.coinbase.com/products/eth-usd/ticker"
         return self.call_url("etherium",url)
 
@@ -48,4 +51,4 @@ class Crypto:
 
     def get_doge_price(self):
         url = "https://api.pro.coinbase.com/products/doge-usd/ticker"
-        return self.call_url("doge",url)
+        return self.call_url("dogecoin",url)

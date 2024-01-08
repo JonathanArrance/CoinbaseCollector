@@ -1,6 +1,7 @@
 import sqlite3
 import logging
 import settings
+import time
 
 class Database:
 
@@ -81,5 +82,25 @@ class Database:
         
         return True
     
-    def trim_db(self):
-        pass
+    def trim_db(self,keep):
+        """
+        DESC: Keep only the entries greater than or equal to the keep variable
+        EX: keep = 120minutes 60sec x 120min = 7200sec 
+        Only entries less than or equal to 7200sec will be kept
+        """
+        keep_cutoff = int(time.time()) - int(keep) * 60
+        
+        try:
+            self.cursor.execute("DELETE FROM cryptoHistory WHERE timestamp <= ?",(keep_cutoff,))
+            self.connection.commit()
+        except Exception as e:
+            print(e)
+            logging.error(f'Could not trim the timestamps: {e}.')
+        else:
+            self.connection.rollback()
+        
+        return True
+
+
+
+        

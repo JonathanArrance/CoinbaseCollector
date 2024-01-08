@@ -12,14 +12,17 @@ def main():
 
     while True:
         btc = cr.get_btc_price()
+        pr.current_price(btc)
         print('\n')
         eth = cr.get_eth_price()
+        pr.current_price(eth)
+        print('\n')
+        doge = cr.get_doge_price()
+        pr.current_price(doge)
 
-        #emit the prom database
-        pr.bitcoin_price(btc)
-        pr.etherium_price(eth)
         data.write_to_history(btc)
         data.write_to_history(eth)
+        data.write_to_history(doge)
         time.sleep(settings.COINBASE_INTERVAL)
 
 if __name__ == '__main__':

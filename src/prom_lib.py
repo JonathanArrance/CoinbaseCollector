@@ -14,21 +14,23 @@ class prometheus():
         OUTPUT: None
         """
         logging.info("Starting Prometheus scrape endpoint.")
+
+    def start_server(self):
         start_http_server(9029)
 
-        self.btc_price_gauge = Gauge('bitcoin_price_usd', 'Bitcoin Price in USD')
-        self.eth_price_gauge = Gauge('ethereum_price_usd', 'Ethereum Price in USD')
-
-    def bitcoin_price(self,input_dict):
-
+        self.coin_price = Gauge('coin_price_usd', 'Bitcoin Price in USD',['ticker','name'])
+        self.coin_ask = Gauge('coin_ask_usd', 'Bitcoin Ask in USD',['ticker','name'])
+        self.coin_bid = Gauge('coin_bid_usd', 'Bitcoin Bid in USD',['ticker','name'])
+        self.coin_volume = Gauge('coin_volume_usd', 'Bitcoin Volume',['ticker','name'])
+    
+    def current_price(self,input_dict):
+        print(input_dict)
         try:
-            self.btc_price_gauge.set(input_dict['price'])
+            logging.info("Emitting weather station metrics.")
+            self.coin_price.labels(input_dict['ticker'],input_dict['name']).set(input_dict['coin_price'])
+            self.coin_bid.labels(input_dict['ticker'],input_dict['name']).set(input_dict['coin_bid'])
+            self.coin_ask.labels(input_dict['ticker'],input_dict['name']).set(input_dict['coin_ask'])
+            self.coin_volume.labels(input_dict['ticker'],input_dict['name']).set(input_dict['coin_volume'])
         except Exception as e:
             logging.error(e)
-
-    def etherium_price(self,input_dict):
-
-        try:
-            self.eth_price_gauge.set(input_dict['price'])
-        except Exception as e:
-            logging.error(e)
+            logging.error("Could not emit coin metrics.")
