@@ -10,6 +10,8 @@ def main():
     data = Database()
     cr = Crypto()
 
+    pr.start_server()
+
     while True:
         btc = cr.get_btc_price()
         pr.current_price(btc)

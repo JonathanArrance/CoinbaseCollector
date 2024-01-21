@@ -21,6 +21,7 @@ class Crypto:
         try:
             # Make a GET request to the API
             response = requests.get(url)
+            tick = url.split('/')
 
             # Check if the request was successful (status code 200)
             if response.status_code == 200:
@@ -39,7 +40,7 @@ class Crypto:
             print(f"An error occurred: {e}")
             price ="0.00"
 
-        return({'coin':coin,'timestamp':time.time(),'price':price,'bid':bid,'ask':ask,'volume':volume})
+        return({'coin':coin,'timestamp':time.time(),'price':price,'bid':bid,'ask':ask,'volume':volume,'ticker':tick[-2]})
 
     def get_eth_price(self):
         url = "https://api.pro.coinbase.com/products/eth-usd/ticker"
@@ -51,4 +52,8 @@ class Crypto:
 
     def get_doge_price(self):
         url = "https://api.pro.coinbase.com/products/doge-usd/ticker"
+        return self.call_url("dogecoin",url)
+    
+    def get_link_price(self):
+        url = "https://api.pro.coinbase.com/products/link-usd/ticker"
         return self.call_url("dogecoin",url)
