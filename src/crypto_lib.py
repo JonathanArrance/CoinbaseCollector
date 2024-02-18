@@ -1,21 +1,57 @@
 import requests
 import time
 import settings
+from database import Database
+
+db = Database()
 
 class Crypto:
 
     def __init__(self):
+        self.headers = {
+            'Content-Type': 'application/json'
+            }
+
+    def sell_coin_market(self):
         pass
 
-    def call_url(self,coin,url):
+    def buy_coin_market(self):
+        pass
 
-        #valid = ['etherium','bitcoin','chainlink','Doge']
+    def buy_coin_limit(self):
+        pass
 
-        if coin not in settings.VALID_COINS:
-            raise Exception(f'The coin, {coin} is not a valid coin.')
-        else:
-            coin = coin.capitalize()
+    def sell_coin_limit(self):
+        pass
 
+    def get_portfolio(self):
+        pass
+    
+    def call_url(self,url):
+        """
+        DESC: Call the desired URL
+        """
+        try:
+            # Make a GET request to the API
+            response = requests.get(url)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+        return response
+
+    def get_coin_price(self,input_dict):
+        """
+        DESC: Get the coin price, the price endpoint is open and does not need authentication
+        INPUT: input_dict - coin_name
+                          - coin_ticker
+        OUTPUT: out_dict - coin_name
+                         - coin_ask
+                         - coin_bid
+                         - coin_volume
+                         - coin_ticker
+        """
+        url = f"https://api.pro.coinbase.com/products/{input_dict['coin_ticker']}/ticker"
+        #return self.call_price_url(f"{input_dict['coin_name']}",url)
         price = bid = ask = volume = None
 
         try:
@@ -32,28 +68,13 @@ class Crypto:
                 ask = float(data["ask"])
                 volume = float(data["volume"])
 
-                print(f"Current {coin} Price: ${price:.2f}")
+                print(f"Current {input_dict['coin_name']} Price: ${price:.2f}")
             else:
                 print(f"Error: Unable to fetch data. Status code: {response.status_code}")
 
         except Exception as e:
             print(f"An error occurred: {e}")
-            price ="0.00"
+            #price ="0.00"
+            return({'coin':input_dict['coin_name'],'timestamp':time.time(),'price':0.00,'bid':0.00,'ask':0.00,'volume':0.00,'ticker':tick[-2]})
 
-        return({'coin':coin,'timestamp':time.time(),'price':price,'bid':bid,'ask':ask,'volume':volume,'ticker':tick[-2]})
-
-    def get_eth_price(self):
-        url = "https://api.pro.coinbase.com/products/eth-usd/ticker"
-        return self.call_url("etherium",url)
-
-    def get_btc_price(self):
-        url = "https://api.pro.coinbase.com/products/btc-usd/ticker"
-        return self.call_url("bitcoin",url)
-
-    def get_doge_price(self):
-        url = "https://api.pro.coinbase.com/products/doge-usd/ticker"
-        return self.call_url("dogecoin",url)
-    
-    def get_link_price(self):
-        url = "https://api.pro.coinbase.com/products/link-usd/ticker"
-        return self.call_url("dogecoin",url)
+        return({'coin':input_dict['coin_name'],'timestamp':time.time(),'price':price,'bid':bid,'ask':ask,'volume':volume,'ticker':tick[-2]})

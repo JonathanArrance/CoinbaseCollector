@@ -6,7 +6,6 @@ COINBASE_INTERVAL = os.getenv('COINBASE_INTERVAL',10)
 COINBASE_INTERVAL = int(COINBASE_INTERVAL)
 
 TIMESERVER = os.getenv('TIMESERVER','pool.ntp.org')
-VALID_COINS = os.getenv('VALID_COINS',['etherium','bitcoin','chainlink','dogecoin'])
 
 APIVER = os.getenv('VALID_COINS','beta')
 DB_PATH = os.getenv('DB_PATH','/db')

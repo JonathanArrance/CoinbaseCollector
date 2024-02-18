@@ -7,25 +7,19 @@ import settings
 def main():
 
     pr = prom()
-    data = Database()
+    db = Database()
     cr = Crypto()
 
     pr.start_server()
 
     while True:
-        btc = cr.get_btc_price()
-        pr.current_price(btc)
-        print('\n')
-        eth = cr.get_eth_price()
-        pr.current_price(eth)
-        print('\n')
-        doge = cr.get_doge_price()
-        pr.current_price(doge)
-
-        data.write_to_history(btc)
-        data.write_to_history(eth)
-        data.write_to_history(doge)
-        time.sleep(settings.COINBASE_INTERVAL)
+        valid_coins = db.get_coins()
+        for valcoin in valid_coins:
+            coin = cr.get_coin_price({"coin_name":valcoin[2],"coin_ticker":valcoin[3]})
+            pr.current_price(coin)
+            print('\n')
+            db.write_to_history(coin)
+            time.sleep(settings.COINBASE_INTERVAL)
 
 if __name__ == '__main__':
     main()
