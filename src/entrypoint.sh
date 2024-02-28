@@ -1,9 +1,10 @@
 #!/bin/bash
 
 mkdir -p ${DB_PATH}
-mkdir -p /opt/crypto/ssl
+#mkdir -p /opt/crypto/ssl
 
-openssl req -newkey rsa:4096  -x509  -sha512  -days 365 -nodes -subj "/C=US/ST=NC/L=AnyTown/O=Home/CN=coinbasecollector.com" -out /opt/crypto/ssl/apicert_chain.crt -keyout /opt/crypto/ssl/api_private_key.key
+#openssl req -newkey rsa:4096  -x509  -sha512  -days 365 -nodes -subj "/C=US/ST=NC/L=AnyTown/O=Home/CN=coinbasecollector.com" -out /opt/crypto/ssl/apicert_chain.crt -keyout /opt/crypto/ssl/api_private_key.key
+openssl req -newkey rsa:4096  -x509  -sha512  -days 365 -nodes -subj "/C=US/ST=NC/L=AnyTown/O=Home/CN=coinbasecollector.com" -out /etc/api/ssl/apicert_chain.crt -keyout /etc/api/ssl/api_private_key.key
 
 #create the tables
 sqlite3 ${DB_PATH}/crypto.db "CREATE TABLE ValidCoins ( ID INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT, CoinName TEXT, CoinAbv TEXT, CoinTicker TEXT)"
