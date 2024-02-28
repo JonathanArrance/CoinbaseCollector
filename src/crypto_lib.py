@@ -57,7 +57,6 @@ class Crypto:
         try:
             # Make a GET request to the API
             response = requests.get(url)
-            tick = url.split('/')
 
             # Check if the request was successful (status code 200)
             if response.status_code == 200:
@@ -75,6 +74,6 @@ class Crypto:
         except Exception as e:
             print(f"An error occurred: {e}")
             #price ="0.00"
-            return({'coin':input_dict['coin_name'],'timestamp':time.time(),'price':0.00,'bid':0.00,'ask':0.00,'volume':0.00,'ticker':tick[-2]})
+            return({'coin':input_dict['coin_name'],'timestamp':time.time(),'price':0.00,'bid':0.00,'ask':0.00,'volume':0.00,'ticker':input_dict['coin_ticker']})
 
-        return({'coin':input_dict['coin_name'],'timestamp':time.time(),'price':price,'bid':bid,'ask':ask,'volume':volume,'ticker':tick[-2]})
+        return({'coin':input_dict['coin_name'],'timestamp':time.time(),'price':price,'bid':bid,'ask':ask,'volume':volume,'ticker':input_dict['coin_ticker']})

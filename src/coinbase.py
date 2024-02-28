@@ -15,7 +15,7 @@ def main():
     while True:
         valid_coins = db.get_coins()
         for valcoin in valid_coins:
-            coin = cr.get_coin_price({"coin_name":valcoin[2],"coin_ticker":valcoin[3]})
+            coin = cr.get_coin_price({"coin_name":valcoin['coinname'],"coin_ticker":valcoin['cointicker']})
             pr.current_price(coin)
             print('\n')
             db.write_to_history(coin)
