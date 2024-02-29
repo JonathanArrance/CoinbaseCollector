@@ -45,7 +45,7 @@ class Database:
         ticker = str(input_dict['cointicker']).lower()
 
         try:
-            self.cursor.execute("INSERT INTO ValidCoins (CoinName,CoinAbv,CoinTicker) VALUES (?,?,?)",(coinname,abv,ticker))
+            self.cursor.execute("INSERT OR REPLACE INTO ValidCoins (CoinName,CoinAbv,CoinTicker) VALUES (?,?,?)",(coinname,abv,ticker))
             self.connection.commit()
             out = {'CoinName': coinname,'CoinAbv':abv,'CoinTicker':ticker}
         except Exception as e:
@@ -63,7 +63,8 @@ class Database:
         coins = self.get_coins()
         valid = []
         for coin in coins:
-            valid.append(str(coin[1]).lower())
+            out = {'coin_name':str(coin['coinname']).lower() ,'coin_ticker':coin['coinname']}
+            valid.append(out)
         
         return valid
 
@@ -83,11 +84,11 @@ class Database:
         
         out = []
         for row in rows:
-            out.append({'index':row[0],'coinname':row[1],'coinabv':row[2],'cointicker':row[3]})
+            out.append({'index':row[0],'coin_name':row[1],'coin_abv':row[2],'coin_ticker':row[3]})
 
         return out
     
-    def get_coin(self,coinname):
+    def get_coin(self,coinname=None,coinid=None):
         """
         DESC: Get the coin specifics and price history
         INPUT: coinname
@@ -105,10 +106,10 @@ class Database:
         except Exception as e:
             print(e)
             logging.error(f"Could not find {coinname} the ValidCoins: {e}.")
+    
+        return {'index':row[0],'coin_name':row[1],'coin_abv':row[2],'coin_ticker':row[3]}
 
-        return {'index':row[0],'coinname':row[1],'coinabv':row[2],'cointicker':row[3]}
-
-    def delete_coin(self,coinname):
+    def delete_coin(self,coinname=None,coinid=None):
         """
         DESC: Delete a valid coin
         INPUT: coin_id - Integer id

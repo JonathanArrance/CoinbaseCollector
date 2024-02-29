@@ -71,21 +71,24 @@ class DeleteCoin(Resource):
         #Get the Coin info, current coin price, and history froom the db.
         return jsonify(db.delete_coin(coin))
 
-@ns1.route('/price/<coin>')
+@ns1.route('/currentprice')
 class CryptoPrice(Resource):
     #@auth.login_required
-    def get(self,coin):
+    def get(self):
         
-        if coin.lower() not in db.get_valid_coins():
-            return jsonify({'coin':coin,'timestamp':time.time(),'price':0.00,'bid':0.00,'ask':0.00,'volume':0,'ticker':None})
+        outs = db.get_coins()
 
-        try:
-            out = cr.get_coin_price(coin)
-        except Exception as e:
-            logging.error(e)
-            abort(400)
-        
-        return jsonify(out)
+        prices = []
+        for out in outs:
+
+            try:
+                p = cr.get_coin_price(out)
+                prices.append(p)
+            except Exception as e:
+                logging.error(e)
+                abort(400)
+
+        return jsonify(prices)
 
 @ns1.route('/portfolio')
 class Portfolio(Resource):

@@ -1,5 +1,3 @@
-import os
-import settings
 import logging
 
 from prometheus_client import start_http_server
