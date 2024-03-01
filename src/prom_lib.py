@@ -22,6 +22,7 @@ class prometheus():
         self.coin_volume = Gauge('coin_volume_usd', 'Coin Volume',['ticker','coin'])
     
     def current_price(self,input_dict):
+        print(input_dict)
         try:
             logging.info("Emitting weather station metrics.")
             self.coin_price.labels(input_dict['ticker'],input_dict['coin']).set(input_dict['price'])

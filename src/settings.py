@@ -2,7 +2,7 @@ import os
 
 #Coinbase
 COINBASE_KEY = os.getenv('COINBASE_KEY',None)
-COINBASE_INTERVAL = os.getenv('COINBASE_INTERVAL',10)
+COINBASE_INTERVAL = os.getenv('COINBASE_INTERVAL',2)
 COINBASE_INTERVAL = int(COINBASE_INTERVAL)
 
 TIMESERVER = os.getenv('TIMESERVER','pool.ntp.org')
