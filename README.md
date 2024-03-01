@@ -93,3 +93,6 @@ https://localhost:9030
 ```
 
 ## Grafana Dashboard
+Use the Grafana dashboard to visualize the collected data.
+
+Get the dashboard [here](https://github.com/JonathanArrance/CoinbaseCollector/tree/main/dashboard)
