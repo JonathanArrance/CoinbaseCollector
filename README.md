@@ -96,3 +96,13 @@ https://localhost:9030
 Use the Grafana dashboard to visualize the collected data.
 
 Get the dashboard [here](https://github.com/JonathanArrance/CoinbaseCollector/tree/main/dashboard)
+
+## REST API
+The rest api can be found on port 9030. The Swagger doc can be use to test the api endpoints.
+
+NOTE: Not all endpoints are implemented.
+
+```
+http://localhost:9030
+```
+<img src="./Images/api.png">
