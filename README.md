@@ -52,7 +52,7 @@ coinbase_collector:latest
 
 **Database**
 
-The SQLite DB is stored in the /db location in the container by default. To chnage it you will need to set the DB_PATH env varibale. 
+The SQLite DB is stored in the /db location in the container by default. To change it you will need to set the DB_PATH env varibale. 
 
 ## Prometheus
 
