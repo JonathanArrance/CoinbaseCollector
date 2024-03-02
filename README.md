@@ -78,31 +78,23 @@ scrape_configs:
       - targets: ['192.168.10.88:9029']
 ```
 
-## REST API
-
-**Simple API connection**
-
-In order to ge to the REST API or add it into your alert webooks, use port 9030 to reach it.
-
-**Endpoints**
-
-In order to get to the endpoint Swagger doc use port 9030.
-
-```bash
-https://localhost:9030
-```
-
 ## Grafana Dashboard
 Use the Grafana dashboard to visualize the collected data.
 
 Get the dashboard [here](https://github.com/JonathanArrance/CoinbaseCollector/tree/main/dashboard)
 
 ## REST API
+
+**Simple API connection**
+
 The rest api can be found on port 9030. The Swagger doc can be use to test the api endpoints.
 
 NOTE: Not all endpoints are implemented.
 
+**Endpoints**
+
 ```
 http://localhost:9030
 ```
+
 <img src="./Images/api.png">
