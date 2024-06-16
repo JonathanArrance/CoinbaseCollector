@@ -26,11 +26,13 @@ restxapi = Api(application,version=settings.APIVER, title='Crypto Action API',
 #Enable logging
 logging.basicConfig(level=logging.DEBUG)
 
-parser = reqparse.RequestParser()
+#parser = reqparse.RequestParser()
+#addport = reqparse.RequestParser()
 
 #create the namespaces
 ns1 = restxapi.namespace('coins/', description='Crypto coin API endpoints')
 ns2 = restxapi.namespace('orders/', description='Crypto orders API endpoints')
+ns3 = restxapi.namespace('portfolio/', description='Crypto portfolios')
 
 cr = Crypto()
 db = Database()
@@ -50,6 +52,7 @@ class GetCoin(Resource):
 
 @ns1.route('/addcoin')
 class AddCoin(Resource):
+    parser = reqparse.RequestParser()
     parser.add_argument('coinname', type=str, required=True, location='form',help='The full coin name.')
     parser.add_argument('coinabv', type=str,required=True, location='form',help='The coin abreviation. Ex Bitcoin, abriviation is btc.')
     parser.add_argument('cointicker', type=str, required=True, location='form',help='Coin ticker in Coinbase. Ex btc-usd')
@@ -57,7 +60,8 @@ class AddCoin(Resource):
     
     #@auth.login_required
     def post(self):
-        args = parser.parse_args()
+        #args = parser.parse_args()
+        args = AddCoin.parser.parse_args()
         try:
             return jsonify(db.add_coin(args))
         except Exception as e:
@@ -90,11 +94,53 @@ class CryptoPrice(Resource):
 
         return jsonify(prices)
 
-@ns1.route('/portfolio')
-class Portfolio(Resource):
+@ns3.route('/list')
+class ListPortfolio(Resource):
     #@auth.login_required
     def get(self):
+        return jsonify(db.get_portfolios())
+
+@ns3.route('/get/<portfolio>')
+class GetPortfolio(Resource):
+    #@auth.login_required
+    def get(self,portfolio):
+        return jsonify(db.get_portfolio(portfolio))
+
+@ns3.route('/addportfolio')
+class AddPortfolio(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('portfolioname', type=str, required=True, location='form',help='New Portfolio name.')
+    @restxapi.doc(parser=parser)
+    
+    #@auth.login_required
+    def post(self):
+        args = AddPortfolio.parser.parse_args()
+        try:
+            return jsonify(db.add_portfolio(args))
+        except Exception as e:
+            logging.error(e)
+            abort(400)
+
+@ns3.route('/removeportfolio')
+class Portfolio(Resource):
+    #@auth.login_required
+    def delete(self):
         return "Not implemented"
+
+@ns3.route('/<portfolio>/addcoin')
+class Portfolio(Resource):
+    #@auth.login_required
+    def post(self):
+        return "Not implemented"
+
+@ns3.route('/<portfolio>/removecoin')
+class Portfolio(Resource):
+    #@auth.login_required
+    def delete(self):
+        return "Not implemented"
+
+
+###########
 
 @ns2.route('/marketsell/<coin>')
 class SellCoin(Resource):

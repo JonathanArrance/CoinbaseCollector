@@ -23,9 +23,6 @@ class Crypto:
 
     def sell_coin_limit(self):
         pass
-
-    def get_portfolio(self):
-        pass
     
     def call_url(self,url):
         """
