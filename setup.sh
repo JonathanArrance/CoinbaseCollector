@@ -3,6 +3,8 @@
 #setup on the local machine for test and dev
 #source your env variables first
 
+source ${pwd}/env.sh
+
 docker network create --driver bridge --subnet 172.18.0.0/16 container_net
 
 mkdir -p $(pwd)/db

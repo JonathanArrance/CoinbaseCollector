@@ -37,7 +37,7 @@ ns3 = restxapi.namespace('portfolio/', description='Crypto portfolios')
 cr = Crypto()
 db = Database()
 
-@ns1.route('/listcoins')
+@ns1.route('/list')
 class ListCoins(Resource):
     #@auth.login_required
     def get(self):
@@ -94,6 +94,7 @@ class CryptoPrice(Resource):
 
         return jsonify(prices)
 
+##portfolio
 @ns3.route('/list')
 class ListPortfolio(Resource):
     #@auth.login_required
@@ -109,12 +110,13 @@ class GetPortfolio(Resource):
 @ns3.route('/addportfolio')
 class AddPortfolio(Resource):
     parser = reqparse.RequestParser()
-    parser.add_argument('portfolioname', type=str, required=True, location='form',help='New Portfolio name.')
+    parser.add_argument('portfolio_name', type=str, required=True, location='form',help='New Portfolio name.')
     @restxapi.doc(parser=parser)
     
     #@auth.login_required
     def post(self):
         args = AddPortfolio.parser.parse_args()
+        print(args)
         try:
             return jsonify(db.add_portfolio(args))
         except Exception as e:

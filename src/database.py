@@ -84,7 +84,7 @@ class Database:
         
         out = []
         for row in rows:
-            out.append({'index':row[0],'coin_name':row[1],'coin_abv':row[2],'coin_ticker':row[3]})
+            out.append({'id':row[0],'coin_name':row[1],'coin_abv':row[2],'coin_ticker':row[3]})
 
         return out
     
@@ -153,32 +153,32 @@ class Database:
     def add_portfolio(self,input_dict):
         """
         DESC:  a portfolio value and and the coins
-        INPUT: input_dict - portfolioname - name of the portfolio
+        INPUT: input_dict - portfolio_name - name of the portfolio
         OUTPUT: out_dict - Name
                          - Success true/false
         """
-        pname = str(input_dict['portfolioname']).capitalize()
-        print(pname)
-        out = {'PortfolioName': pname,'Success': False}
+        pname = str(input_dict['portfolio_name']).capitalize()
+        print(type(pname))
+        out = {'portfolio_name': pname,'success': False}
 
-        #try:
-        x = f"INSERT OR REPLACE INTO Portfolios (PortfolioName) VALUES ({pname})"
-        print(x)
-        self.cursor.execute(x)
-        self.connection.commit()
-        out = {'PortfolioName': pname,'Success':True}
-        #except Exception as e:
-        #    print(e)
-        #    logging.error(f'Could not write to the DB: {e}.')
-        #else:
-        #    self.connection.rollback()
-        
+        try:
+            self.cursor.execute("INSERT OR REPLACE INTO Portfolios (PortfolioName) VALUES (?)",(pname,))
+            self.connection.commit()
+            out = {'portfolio_name': input_dict['portfolio_name'],'success':True}
+        except Exception as e:
+            print(e)
+            logging.error(f'Could not write to the DB: {e}.')
+        else:
+            self.connection.rollback()
+
         return out
 
     def get_portfolios(self):
         """
         DESC: List the available portfolios.
+        Works
         """
+        out = []
         try:
             self.cursor.execute(f"SELECT * FROM Portfolios")
             rows = self.cursor.fetchall()
@@ -186,7 +186,10 @@ class Database:
             print(e)
             logging.error(f"Could not list the Portfolios: {e}.")
         
-        return rows
+        for row in rows:
+            out.append({'id':row[0],'portfolio_name':row[1]})
+
+        return out
 
     def delete_portfolio(self,name):
         """
@@ -205,7 +208,7 @@ class Database:
             print(e)
             logging.error(f'Could not delete coin from Portfolio: {e}.')
             self.connection.rollback()
-            return {'PortfolioName': portfolioname,'Success': False}
+            return {'portfolio_name': portfolioname,'success': False}
         
         try:
             self.cursor.execute(f"DELETE FROM Portfolios WHERE PortfolioName='{portfolioname}'")
@@ -214,9 +217,9 @@ class Database:
             print(e)
             logging.error(f'Could not delete the Portfolio: {e}.')
             self.connection.rollback()
-            return {'PortfolioName': portfolioname,'Success': False}
+            return {'portfolio_name': portfolioname,'success': False}
         else:
-            return {'PortfolioName': portfolioname,'Success': True}
+            return {'portfolio_name': portfolioname,'success': True}
 
     def add_portfolio_coin(self,input_dict):
         """
@@ -228,7 +231,7 @@ class Database:
         """
         portfolioname = str(input_dict['portfolioName']).capitalize()
         coinname = str(input_dict['coinName']).capitalize()
-        out = {'coinName': coinname,'success': False}
+        out = {'coin_name': coinname,'success': False}
 
         if(self.get_portfolio(portfolioname)['Success'] != False):
             logging.error(f'Could not find the portfolio: {portfolioname}.')
@@ -237,7 +240,7 @@ class Database:
         try:
             self.cursor.execute("INSERT OR REPLACE INTO PortfolioCoins (PortfolioName,CoinName) VALUES (?,?)",(portfolioname,coinname))
             self.connection.commit()
-            out = {'coinName': coinname,'success':True}
+            out = {'coin_name': coinname,'success':True}
         except Exception as e:
             print(e)
             logging.error(f'Could not write to the DB: {e}.')
@@ -255,11 +258,11 @@ class Database:
                          - Success true/false
         note: The portfolio must exsist in order to delete a coin
         """
-        portfolioname = str(input_dict['portfolioName']).capitalize()
-        coinname = str(input_dict['coinName']).capitalize()
-        out = {'coinName': coinname,'success': False}
+        portfolioname = str(input_dict['portfolio_name']).capitalize()
+        coinname = str(input_dict['coin_name']).capitalize()
+        out = {'coin_name': coinname,'success': False}
 
-        if(self.get_portfolio(portfolioname)['Success'] != False):
+        if(self.get_portfolio(portfolioname)['success'] != False):
             logging.error(f'Could not find the portfolio: {portfolioname}.')
             return out
 
@@ -267,7 +270,7 @@ class Database:
         try:
             self.cursor.execute(f"DELETE FROM PortfolioCoins WHERE CoinName='{coinname}' AND PortfolioName='{portfolioname}'")
             self.connection.commit()
-            out = {'coinName': portfolioname,'success': True}
+            out = {'coin_name': portfolioname,'success': True}
         except Exception as e:
             print(e)
             logging.error(f'Could not delete coin from Portfolio: {e}.')
@@ -280,13 +283,13 @@ class Database:
         DESC: Get a portfolio value and and the coins
         """
         portfolioname = str(name).capitalize()
-        out = {'success':False,'portfolio':None}
+        out = {'success':False,'portfolio_name':None}
 
         try:
             self.cursor.execute(f"SELECT * FROM Portfolios WHERE PortfolioName='{portfolioname}'")
             row = self.cursor.fetchall()
             print(row)
-            out = {'success':True,'portfolio':portfolioname}
+            out = {'success':True,'portfolio_name':portfolioname}
         except Exception as e:
             print(e)
             logging.error(f"Could not find {portfolioname} in Portfolios: {e}.")
