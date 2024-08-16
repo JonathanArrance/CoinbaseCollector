@@ -23,3 +23,11 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
+"""
+ERROR:root:float() argument must be a string or a real number, not 'NoneType'
+ERROR:root:Could not emit coin metrics.
+
+"""

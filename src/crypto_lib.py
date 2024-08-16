@@ -49,6 +49,22 @@ class Crypto:
                          - coin_bid
                          - coin_volume
                          - coin_ticker
+                         
+        this needs to be fixed. need to account for the floats properly and format the output.
+
+        Traceback (most recent call last):
+        File "/opt/crypto/coinbase.py", line 31, in <module>
+            main()
+        File "/opt/crypto/coinbase.py", line 25, in main
+            pr.current_price(coin)
+        File "/opt/crypto/prom_lib.py", line 31, in current_price
+            self.coin_bid.labels(input_dict['ticker'],input_dict['coin']).set(input_dict['bid'])
+        File "/usr/local/lib/python3.11/dist-packages/prometheus_client/metrics.py", line 396, in set
+            self._value.set(float(value))
+                            ^^^^^^^^^^^^
+        TypeError: float() argument must be a string or a real number, not 'NoneType'
+
+        
         """
         url = f"https://api.pro.coinbase.com/products/{input_dict['coin_ticker']}/ticker"
         #return self.call_price_url(f"{input_dict['coin_name']}",url)
