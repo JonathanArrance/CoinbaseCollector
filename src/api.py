@@ -37,6 +37,11 @@ ns3 = restxapi.namespace('portfolio/', description='Crypto portfolios')
 cr = Crypto()
 db = Database()
 
+@ns1.route('/catalog')
+class Catalog(Resource):
+    def get(self):
+        return jsonify(cr.get_coin_catalog())
+
 @ns1.route('/list')
 class ListCoins(Resource):
     #@auth.login_required
@@ -48,6 +53,14 @@ class GetCoin(Resource):
     #@auth.login_required
     def get(self,coin):
         #Get the Coin info, current coin price, and history froom the db.
+        
+        #catalog = cr.get_coin_catalog()
+        #coinname = coin.capitalize()
+        #for x in coinname:
+        #    if x['display_name'] == str(coinname).upper():
+        #        out['quote_increment'] = x['quote_increment']
+        #        out['coin_status'] = x['status']
+        
         return jsonify(db.get_coin(coin))
 
 @ns1.route('/addcoin')

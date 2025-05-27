@@ -107,7 +107,9 @@ class Database:
             print(e)
             logging.error(f"Could not find {coinname} the ValidCoins: {e}.")
     
-        return {'index':row[0],'coin_name':row[1],'coin_abv':row[2],'coin_ticker':row[3]}
+        out = {'index':row[0],'coin_name':row[1],'coin_abv':row[2],'coin_ticker':row[3]}
+
+        return out
 
     def delete_coin(self,coinname=None,coinid=None):
         """
