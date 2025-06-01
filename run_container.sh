@@ -3,7 +3,7 @@ docker run -d -p 9029:9029 -p 9030:9030 \
 --mount type=bind,source="$(pwd)"/db,target=/opt/crypto/db \
 --mount type=bind,source="$(pwd)"/ssl,target=/etc/api/ssl \
 -e APIVER='beta' \
--e COINBASE_INTERVAL=30 \
+-e COINBASE_INTERVAL=300 \
 -e DB_PATH='/opt/crypto/db' \
 --network container_net \
 --name coinbase-collector \
