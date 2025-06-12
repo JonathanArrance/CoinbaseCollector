@@ -14,6 +14,7 @@ def main():
 
     while True:
         valid_coins = db.get_coins()
+        print(valid_coins)
         for valcoin in valid_coins:
             coin = cr.get_coin_price(valcoin)
             pr.current_price(coin)
@@ -23,3 +24,11 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
+"""
+ERROR:root:float() argument must be a string or a real number, not 'NoneType'
+ERROR:root:Could not emit coin metrics.
+
+"""

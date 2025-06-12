@@ -10,6 +10,7 @@ __pycache__/
 /db
 /ssl
 env.sh
+/scratch
 
 # Distribution / packaging
 .Python
@@ -164,3 +165,5 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 scratch/test.py
+env.sh
+run_container.sh
