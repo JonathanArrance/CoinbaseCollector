@@ -14,6 +14,7 @@ def main():
 
     while True:
         valid_coins = db.get_coins()
+        print(valid_coins)
         for valcoin in valid_coins:
             coin = cr.get_coin_price(valcoin)
             pr.current_price(coin)

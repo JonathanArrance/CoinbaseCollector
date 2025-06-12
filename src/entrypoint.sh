@@ -12,14 +12,15 @@ sqlite3 ${DB_PATH}/crypto.db "CREATE TABLE if not exists cryptoHistory (ID INTEG
 sqlite3 ${DB_PATH}/crypto.db "CREATE TABLE if not exists Portfolios (ID INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT, PortfolioName TEXT)"
 sqlite3 ${DB_PATH}/crypto.db "CREATE TABLE if not exists PortfolioCoins (ID INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT, CoinName TEXT, PortfolioName TEXT)"
 
-sqlite3 ${DB_PATH}/crypto.db "INSERT OR IGNORE INTO ValidCoins (CoinName,CoinAbv,CoinTicker) VALUES ('Bitcoin','btc','btc-usd')"
-sqlite3 ${DB_PATH}/crypto.db "INSERT OR IGNORE INTO ValidCoins (CoinName,CoinAbv,CoinTicker) VALUES ('Ethereum','eth','eth-usd')"
-sqlite3 ${DB_PATH}/crypto.db "INSERT OR IGNORE INTO ValidCoins (CoinName,CoinAbv,CoinTicker) VALUES ('Dogecoin','doge','doge-usd')"
-sqlite3 ${DB_PATH}/crypto.db "INSERT OR IGNORE INTO ValidCoins (CoinName,CoinAbv,CoinTicker) VALUES ('Chainlink','link','link-usd')"
+sqlite3 ${DB_PATH}/crypto.db "INSERT OR REPLACE INTO ValidCoins (CoinName,CoinAbv,CoinTicker) VALUES ('Bitcoin','btc','btc-usd')"
+sqlite3 ${DB_PATH}/crypto.db "INSERT OR REPLACE INTO ValidCoins (CoinName,CoinAbv,CoinTicker) VALUES ('Ethereum','eth','eth-usd')"
+sqlite3 ${DB_PATH}/crypto.db "INSERT OR REPLACE INTO ValidCoins (CoinName,CoinAbv,CoinTicker) VALUES ('Dogecoin','doge','doge-usd')"
+sqlite3 ${DB_PATH}/crypto.db "INSERT OR REPLACE INTO ValidCoins (CoinName,CoinAbv,CoinTicker) VALUES ('Chainlink','link','link-usd')"
 
-sqlite3 ${DB_PATH}/crypto.db "INSERT OR IGNORE INTO Portfolios (PortfolioName) VALUES ('Default')"
+sqlite3 ${DB_PATH}/crypto.db "INSERT OR REPLACE INTO Portfolios (PortfolioName) VALUES ('Default')"
 
 python3 /opt/crypto/coinbase.py &
 
+# Start the API server
 gunicorn -b 0.0.0.0:9030 --reload --access-logfile api_access.log --error-logfile api_error.log --log-level debug --timeout 120 -w 6 api &
 /bin/sh -c envsubst < /nginx-default.conf > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;' &
