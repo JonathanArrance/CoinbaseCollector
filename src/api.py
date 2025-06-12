@@ -26,16 +26,23 @@ restxapi = Api(application,version=settings.APIVER, title='Crypto Action API',
 #Enable logging
 logging.basicConfig(level=logging.DEBUG)
 
-parser = reqparse.RequestParser()
+#parser = reqparse.RequestParser()
+#addport = reqparse.RequestParser()
 
 #create the namespaces
 ns1 = restxapi.namespace('coins/', description='Crypto coin API endpoints')
 ns2 = restxapi.namespace('orders/', description='Crypto orders API endpoints')
+ns3 = restxapi.namespace('portfolio/', description='Crypto portfolios')
 
 cr = Crypto()
 db = Database()
 
-@ns1.route('/listcoins')
+@ns1.route('/catalog')
+class Catalog(Resource):
+    def get(self):
+        return jsonify(cr.get_coin_catalog())
+
+@ns1.route('/list')
 class ListCoins(Resource):
     #@auth.login_required
     def get(self):
@@ -46,10 +53,19 @@ class GetCoin(Resource):
     #@auth.login_required
     def get(self,coin):
         #Get the Coin info, current coin price, and history froom the db.
+        
+        #catalog = cr.get_coin_catalog()
+        #coinname = coin.capitalize()
+        #for x in coinname:
+        #    if x['display_name'] == str(coinname).upper():
+        #        out['quote_increment'] = x['quote_increment']
+        #        out['coin_status'] = x['status']
+        
         return jsonify(db.get_coin(coin))
 
 @ns1.route('/addcoin')
 class AddCoin(Resource):
+    parser = reqparse.RequestParser()
     parser.add_argument('coinname', type=str, required=True, location='form',help='The full coin name.')
     parser.add_argument('coinabv', type=str,required=True, location='form',help='The coin abreviation. Ex Bitcoin, abriviation is btc.')
     parser.add_argument('cointicker', type=str, required=True, location='form',help='Coin ticker in Coinbase. Ex btc-usd')
@@ -57,7 +73,8 @@ class AddCoin(Resource):
     
     #@auth.login_required
     def post(self):
-        args = parser.parse_args()
+        #args = parser.parse_args()
+        args = AddCoin.parser.parse_args()
         try:
             return jsonify(db.add_coin(args))
         except Exception as e:
@@ -90,11 +107,55 @@ class CryptoPrice(Resource):
 
         return jsonify(prices)
 
-@ns1.route('/portfolio')
-class Portfolio(Resource):
+##portfolio
+@ns3.route('/list')
+class ListPortfolio(Resource):
     #@auth.login_required
     def get(self):
+        return jsonify(db.get_portfolios())
+
+@ns3.route('/get/<portfolio>')
+class GetPortfolio(Resource):
+    #@auth.login_required
+    def get(self,portfolio):
+        return jsonify(db.get_portfolio(portfolio))
+
+@ns3.route('/addportfolio')
+class AddPortfolio(Resource):
+    parser = reqparse.RequestParser()
+    parser.add_argument('portfolio_name', type=str, required=True, location='form',help='New Portfolio name.')
+    @restxapi.doc(parser=parser)
+    
+    #@auth.login_required
+    def post(self):
+        args = AddPortfolio.parser.parse_args()
+        print(args)
+        try:
+            return jsonify(db.add_portfolio(args))
+        except Exception as e:
+            logging.error(e)
+            abort(400)
+
+@ns3.route('/removeportfolio')
+class Portfolio(Resource):
+    #@auth.login_required
+    def delete(self):
         return "Not implemented"
+
+@ns3.route('/<portfolio>/addcoin')
+class Portfolio(Resource):
+    #@auth.login_required
+    def post(self):
+        return "Not implemented"
+
+@ns3.route('/<portfolio>/removecoin')
+class Portfolio(Resource):
+    #@auth.login_required
+    def delete(self):
+        return "Not implemented"
+
+
+###########
 
 @ns2.route('/marketsell/<coin>')
 class SellCoin(Resource):
