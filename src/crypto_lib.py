@@ -43,7 +43,7 @@ class Crypto:
                              - coin_ticker
         """
         currency='USD'
-        url = "https://api.pro.coinbase.com/products/"
+        url = "https://api.exchange.coinbase.com/products/"
 
         out_coins = []
 
