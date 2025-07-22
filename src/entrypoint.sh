@@ -1,7 +1,7 @@
 #!/bin/bash
-
-mkdir -p ${DB_PATH}
-#mkdir -p /opt/crypto/ssl
+if [ ! -d ${DB_PATH} ]; then
+  mkdir -p ${DB_PATH}
+fi
 
 #openssl req -newkey rsa:4096  -x509  -sha512  -days 365 -nodes -subj "/C=US/ST=NC/L=AnyTown/O=Home/CN=coinbasecollector.com" -out /opt/crypto/ssl/apicert_chain.crt -keyout /opt/crypto/ssl/api_private_key.key
 openssl req -newkey rsa:4096  -x509  -sha512  -days 365 -nodes -subj "/C=US/ST=NC/L=AnyTown/O=Home/CN=coinbasecollector.com" -out /etc/api/ssl/apicert_chain.crt -keyout /etc/api/ssl/api_private_key.key
