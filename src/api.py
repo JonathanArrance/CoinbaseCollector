@@ -81,12 +81,12 @@ class AddCoin(Resource):
             logging.error(e)
             abort(400)
 
-@ns1.route('/removecoin/<coin>')
+@ns1.route('/removecoin/coin_name/<coin_id>')
 class DeleteCoin(Resource):
     #@auth.login_required
-    def delete(self,coin):
-        #Get the Coin info, current coin price, and history froom the db.
-        return jsonify(db.delete_coin(coin))
+    def delete(self,coin_name,coin_id):
+        #Remove the coin from the database
+        return jsonify(db.delete_coin(coin_name,coin_id))
 
 @ns1.route('/currentprice')
 class CryptoPrice(Resource):

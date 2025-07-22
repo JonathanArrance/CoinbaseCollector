@@ -1,4 +1,5 @@
 import sqlite3
+import psycopg2
 import logging
 import settings
 import time
@@ -17,6 +18,49 @@ class Database:
         self.cursor = self.connection.cursor()
         #self.cursor.execute("CREATE TABLE if not exists cryptoHistory (ID INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT, coin TEXT, timestamp TEXT, price TEXT)")
 
+        try:
+            self.pgconn = psycopg2.connect(**settings.PG_CONFIG)
+            logging.info("Connected to the PostgreSQL DB.")
+        except Exception as e:
+            logging.error(f"Could not create the cryptoHistory table: {e}.")
+            raise e
+
+        #establish a pgsql cursor
+        self.pgcur = self.pgconn.cursor()
+
+    def insert_candles(self,input_dict):
+        """
+        DESC: Insert the candles into the cryptoHistory table
+        INPUT: candle_df - DataFrame with the candles
+               coin_ticker 
+        OUTPUT: True if successful, False if not
+        """
+        df = input_dict['candle_df']
+        ticker = input_dict['coin_ticker']
+        coin_name = input_dict['coin_name']
+        granularity = str(input_dict['granularity'])
+
+        for _, row in df.iterrows():
+            try:
+                self.pgcur.execute(
+                    """INSERT INTO coinbase_ohlc (timestamp, symbol, open, high, low, close, volume, coinname, granularity)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (timestamp) DO NOTHING""", 
+                    (row['timestamp'], ticker, row['open'], row['high'], row['low'], row['close'], row['volume'], coin_name, granularity)
+                )
+                self.pgconn.commit()
+            except Exception as e:
+                print(e)
+                logging.error(f"Could not insert candles into the DB: {e}.")
+                self.pgconn.rollback()
+
+        #cur.close()
+        #self.pgconn.close()
+        return True
+
+    def close_pg_connection(self):
+        self.pgconn.close()
+    
     def write_to_history(self,input_dict):
 
         try:
@@ -121,7 +165,7 @@ class Database:
         coinname = coinname.capitalize()
 
         try:
-            self.cursor.execute(f"DELETE FROM ValidCoins WHERE CoinName='{coinname}'")
+            self.cursor.execute(f"DELETE FROM ValidCoins WHERE CoinName='{coinname}' AND ID='{coinid}'")
             self.connection.commit()
         except Exception as e:
             print(e)

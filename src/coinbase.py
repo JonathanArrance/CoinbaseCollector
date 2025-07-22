@@ -12,15 +12,29 @@ def main():
 
     pr.start_server()
 
-    while True:
-        valid_coins = db.get_coins()
-        print(valid_coins)
-        for valcoin in valid_coins:
-            coin = cr.get_coin_price(valcoin)
-            pr.current_price(coin)
-            print('\n')
-            db.write_to_history(coin)
-            time.sleep(settings.COINBASE_INTERVAL)
+    try:
+        while True:
+            valid_coins = db.get_coins()
+            for valcoin in valid_coins:
+                coin = cr.get_coin_price(valcoin)
+                pr.current_price(coin)
+                print('\n')
+                db.write_to_history(coin)
+            
+                granularity = ['60','300','900','3600']
+                for gran in granularity:
+                    cs = cr.get_candles({'coin_ticker':valcoin['coin_ticker'],'granularity':gran})
+                    db.insert_candles({'candle_df':cs,
+                                    'coin_ticker':valcoin['coin_ticker'],
+                                    'coin_name':valcoin['coin_name'],
+                                    'granularity':gran
+                                    })
+                    time.sleep(1)
+                
+                time.sleep(settings.COINBASE_INTERVAL)
+    except Exception as e:
+        print(e)
+        db.close_pg_connection()
 
 if __name__ == '__main__':
     main()
