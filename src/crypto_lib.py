@@ -62,34 +62,6 @@ class Crypto:
 
         return out_coins
     
-    def get_candles(self,input_dict):
-        """
-        DESC: Get the candles for a coin ticker
-        INPUT: coin_ticker - the ticker of the coin to get candles for
-               granularity - 60,300,21600,86400 (1 minute, 5 minutes, 6 hours, 1 day)
-        OUTPUT: DataFrame - candles with columns: timestamp, low, high, open, close, volume
-        """
-        url = f"https://api.exchange.coinbase.com/products/{input_dict['coin_ticker']}/candles"
-        
-        params = {'granularity': input_dict['granularity']}
-
-        response = requests.get(url, params=params)
-
-        try:
-            if response.status_code == 200:
-                # Parse the response JSON to get the candles
-                response = response.json()
-            else:
-                print(f"Error: Unable to fetch candles. Status code: {response.status_code}")
-        except Exception as e:
-            print(f"An error occurred while fetching candles: {e}")
-
-        df = pd.DataFrame(response, columns=['timestamp', 'low', 'high', 'open', 'close', 'volume'])
-        
-        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')
-        
-        return df.sort_values('timestamp')
-    
     def get_coin_price(self,input_dict):
         """
         DESC: Get the coin price, the price endpoint is open and does not need authentication
@@ -143,3 +115,46 @@ class Crypto:
             return({'coin':input_dict['coin_name'],'timestamp':time.time(),'price':0.00,'bid':0.00,'ask':0.00,'volume':0.00,'ticker':input_dict['coin_ticker']})
 
         return({'coin':input_dict['coin_name'],'timestamp':time.time(),'price':price,'bid':bid,'ask':ask,'volume':volume,'ticker':input_dict['coin_ticker']})
+
+    def get_candles(self,input_dict):
+        """
+        DESC: Get the candles for a coin ticker
+        INPUT: coin_ticker - the ticker of the coin to get candles for
+               granularity - 60,300,21600,86400 (1 minute, 5 minutes, 6 hours, 1 day)
+        OUTPUT: DataFrame - candles with columns: timestamp, low, high, open, close, volume
+        """
+        url = f"https://api.exchange.coinbase.com/products/{input_dict['coin_ticker']}/candles"
+        
+        params = {'granularity': input_dict['granularity']}
+
+        response = requests.get(url, params=params)
+
+        try:
+            if response.status_code == 200:
+                # Parse the response JSON to get the candles
+                response = response.json()
+            else:
+                print(f"Error: Unable to fetch candles. Status code: {response.status_code}")
+        except Exception as e:
+            print(f"An error occurred while fetching candles: {e}")
+
+        df = pd.DataFrame(response, columns=['epoctimestamp', 'low', 'high', 'open', 'close', 'volume'])
+        
+        df['timestamp'] = pd.to_datetime(df['epoctimestamp'], unit='s')
+        
+        return df.sort_values('timestamp')
+
+    def coin_macd(self, df):
+        """
+        DESC: Get the MACD for a coin ticker
+        """
+        
+        # --- MACD Calculation ---
+        short_ema = df['close'].ewm(span=12, adjust=False).mean()  # EMA 12
+        long_ema = df['close'].ewm(span=26, adjust=False).mean()   # EMA 26
+
+        df['MACD'] = short_ema - long_ema
+        df['signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
+        df['Histogram'] = df['MACD'] - df['signal']
+
+        return df[['timestamp', 'epoctimestamp','close', 'MACD', 'signal', 'Histogram']].sort_values('timestamp')
