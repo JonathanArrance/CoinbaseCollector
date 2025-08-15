@@ -3,6 +3,7 @@ import psycopg2
 import logging
 import settings
 import time
+from datetime import datetime
 
 class Database:
 
@@ -28,6 +29,68 @@ class Database:
         #establish a pgsql cursor
         self.pgcur = self.pgconn.cursor()
 
+    def delete_old_pg_entries(self,ticker):
+        """
+        DESC: Delete entries in the PostgreSQL database that are older than a year.
+        """
+        one_year_ago = int(time.time()) - (365 * 24 * 60 * 60)  # Calculate the timestamp for one year ago
+
+        try:
+            self.pgcur.execute(
+                "DELETE FROM coinbase_ohlc WHERE epoctimestamp <= %s and symbol = %s", (one_year_ago,ticker)
+            )
+            self.pgconn.commit()
+            logging.info("Successfully deleted candlestick entries older than a year.")
+        except Exception as e:
+            logging.error(f"Could not delete old candlestick entries: {e}.")
+            self.pgconn.rollback()
+        
+        try:
+            self.pgcur.execute(
+                "DELETE FROM coinbase_macd WHERE epoctimestamp <= %s and symbol = %s", (one_year_ago,ticker)
+            )
+            self.pgconn.commit()
+            logging.info("Successfully deleted MACD entries older than a year.")
+        except Exception as e:
+            logging.error(f"Could not delete old MACD entries: {e}.")
+            self.pgconn.rollback()
+
+    def insert_macd(self,input_dict):
+        """
+        DESC: Insert the MACD into the cryptoHistory table
+        INPUT: macd_df - DataFrame with the MACD
+               coin_ticker 
+        OUTPUT: True if successful, False if not
+        """
+        df = input_dict['macd_df']
+        ticker = input_dict['coin_ticker']
+        coin_name = input_dict['coin_name']
+        granularity = str(input_dict['granularity'])
+
+        print(f"Inserting MACD for {ticker} with granularity {granularity} into the PGsql DB.")
+        for _, row in df.iterrows():
+            try:
+                self.pgcur.execute(
+                    """INSERT INTO coinbase_macd (epoctimestamp, timestamp, symbol, macd, signal, histogram, coinname, granularity)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (epoctimestamp, symbol, granularity) DO NOTHING""", 
+                    (row['epoctimestamp'],
+                     row['timestamp'], 
+                     ticker, 
+                     row['MACD'], 
+                     row['signal'], 
+                     row['Histogram'], 
+                     coin_name, 
+                     granularity)
+                )
+                self.pgconn.commit()
+            except Exception as e:
+                print(e)
+                logging.error(f"Could not insert MACD into the DB: {e}.")
+                self.pgconn.rollback()
+
+        return True
+    
     def insert_candles(self,input_dict):
         """
         DESC: Insert the candles into the cryptoHistory table
@@ -40,13 +103,24 @@ class Database:
         coin_name = input_dict['coin_name']
         granularity = str(input_dict['granularity'])
 
+        print(f"Inserting candles for {ticker} with granularity {granularity} into the PGsql DB.")
         for _, row in df.iterrows():
+            #int(datetime.strptime(row['timestamp'], "%Y-%m-%d %H:%M:%S%z").timestamp())
             try:
                 self.pgcur.execute(
-                    """INSERT INTO coinbase_ohlc (timestamp, symbol, open, high, low, close, volume, coinname, granularity)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (timestamp) DO NOTHING""", 
-                    (row['timestamp'], ticker, row['open'], row['high'], row['low'], row['close'], row['volume'], coin_name, granularity)
+                    """INSERT INTO coinbase_ohlc (epoctimestamp, timestamp, symbol, open, high, low, close, volume, coinname, granularity)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (epoctimestamp, symbol, granularity) DO NOTHING""", 
+                    (row['epoctimestamp'],
+                     row['timestamp'], 
+                     ticker, 
+                     row['open'], 
+                     row['high'], 
+                     row['low'], 
+                     row['close'], 
+                     row['volume'], 
+                     coin_name, 
+                     granularity)
                 )
                 self.pgconn.commit()
             except Exception as e:
