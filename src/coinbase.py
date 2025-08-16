@@ -3,6 +3,7 @@ from prom_lib import prometheus as prom
 from database import Database
 import time
 import settings
+import logging
 
 
 
@@ -53,14 +54,16 @@ def main():
             granularity = ['60','300','900','3600']
             db.delete_old_pg_entries(valcoin['coin_ticker'])
             for gran in granularity: 
-                print(f"Getting candles for {valcoin['coin_ticker']} with granularity {gran}")
+                logging.info(f"Getting candles for {valcoin['coin_ticker']} with granularity {gran}")
                 cs = cr.get_candles({'coin_ticker':valcoin['coin_ticker'],'granularity':gran})
                 db.insert_candles({'candle_df':cs,
                                 'coin_ticker':valcoin['coin_ticker'],
                                 'coin_name':valcoin['coin_name'],
                                 'granularity':gran
                                 })
+                logging.info(f"Calculating MACD for {valcoin['coin_ticker']} with granularity {gran}")
                 md = cr.coin_macd(cs)
+                logging.info(md)
                 db.insert_macd({'macd_df':md,
                                 'coin_ticker':valcoin['coin_ticker'],
                                 'coin_name':valcoin['coin_name'],
