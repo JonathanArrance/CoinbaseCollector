@@ -8,16 +8,15 @@ from datetime import datetime
 class Database:
 
     def __init__(self):
-        try:
-            self.connection = sqlite3.connect(settings.DB_PATH + "/crypto.db",check_same_thread=False)
-            logging.info("Connected to the DB.")
-        except Exception as e:
-            logging.error(f"Could not connect to the DB: {e}.")
-            raise e
+        #try:
+        #    self.connection = sqlite3.connect(settings.DB_PATH + "/crypto.db",check_same_thread=False)
+        #    logging.info("Connected to the DB.")
+        #except Exception as e:
+        #    logging.error(f"Could not connect to the DB: {e}.")
+        #    raise e
 
         #check if the table is created. If not create it
-        self.cursor = self.connection.cursor()
-        #self.cursor.execute("CREATE TABLE if not exists cryptoHistory (ID INTEGER UNIQUE PRIMARY KEY AUTOINCREMENT, coin TEXT, timestamp TEXT, price TEXT)")
+        #self.cursor = self.connection.cursor()
 
         try:
             self.pgconn = psycopg2.connect(**settings.PG_CONFIG)
@@ -54,6 +53,8 @@ class Database:
         except Exception as e:
             logging.error(f"Could not delete old MACD entries: {e}.")
             self.pgconn.rollback()
+        
+        #I need to add the new tables
 
     def insert_macd(self,input_dict):
         """
@@ -138,16 +139,36 @@ class Database:
     def write_to_history(self,input_dict):
 
         try:
-            #sql = "INSERT INTO cryptoHistory (coin,timestamp,price) VALUES (?,?,?)",({input_dict['coin']},{input_dict['timestamp']},{input_dict['price']})
-            self.cursor.execute("INSERT INTO cryptoHistory (coin,timestamp,price) VALUES (?,?,?)",(input_dict['coin'],input_dict['timestamp'],input_dict['price']))
-            self.connection.commit()
+            sql = """
+                INSERT INTO cryptoHistory (coin, timestamp, price)
+                VALUES (%s, %s, %s)
+            """
+            self.pgcur.execute(sql, (
+                input_dict['coin'],
+                int(input_dict['timestamp']),
+                input_dict['price']
+            ))
+            self.pgconn.commit()
+
         except Exception as e:
+            self.pgconn.rollback()   # rollback only on error
             print(e)
             logging.error(f'Could not write to the DB: {e}.')
-        else:
-            self.connection.rollback()
-        
+            return False
+
         return True
+
+        #try:
+        #    #sql = "INSERT INTO cryptoHistory (coin,timestamp,price) VALUES (?,?,?)",({input_dict['coin']},{input_dict['timestamp']},{input_dict['price']})
+        #    self.cursor.execute("INSERT INTO cryptoHistory (coin,timestamp,price) VALUES (?,?,?)",(input_dict['coin'],input_dict['timestamp'],input_dict['price']))
+        #    self.connection.commit()
+        #except Exception as e:
+        #    print(e)
+        #    logging.error(f'Could not write to the DB: {e}.')
+        #else:
+        #    self.connection.rollback()
+        
+        #return True
 
     def add_coin(self,input_dict):
         """
@@ -157,22 +178,49 @@ class Database:
                           - cointicker
         NOTe: {'CoinName': 'Bitcoin', 'CoinAbv':'btc','CoinTicker':'btc-usd'}
         """
-        out = {'CoinName': None,'CoinAbv':None,'CoinTicker':None}
+        out = {'CoinName': None, 'CoinAbv': None, 'CoinTicker': None}
+
         coinname = str(input_dict['coinname']).capitalize()
         abv = str(input_dict['coinabv']).lower()
         ticker = str(input_dict['cointicker']).lower()
 
         try:
-            self.cursor.execute("INSERT OR REPLACE INTO ValidCoins (CoinName,CoinAbv,CoinTicker) VALUES (?,?,?)",(coinname,abv,ticker))
-            self.connection.commit()
-            out = {'CoinName': coinname,'CoinAbv':abv,'CoinTicker':ticker}
+            sql = """
+                INSERT INTO validCoins (CoinName, CoinAbv, CoinTicker)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (CoinAbv) DO UPDATE
+                SET CoinName = EXCLUDED.CoinName,
+                    CoinTicker = EXCLUDED.CoinTicker
+            """
+            self.pgcur.execute(sql, (coinname, abv, ticker))
+            self.pgconn.commit()
+
+            out = {'CoinName': coinname, 'CoinAbv': abv, 'CoinTicker': ticker}
+
         except Exception as e:
+            self.pgconn.rollback()
             print(e)
             logging.error(f'Could not write to the DB: {e}.')
-        else:
-            self.connection.rollback()
-        
+
         return out
+
+        
+        #out = {'CoinName': None,'CoinAbv':None,'CoinTicker':None}
+        #coinname = str(input_dict['coinname']).capitalize()
+        #abv = str(input_dict['coinabv']).lower()
+        #ticker = str(input_dict['cointicker']).lower()
+
+        #try:
+        #    self.cursor.execute("INSERT OR REPLACE INTO ValidCoins (CoinName,CoinAbv,CoinTicker) VALUES (?,?,?)",(coinname,abv,ticker))
+        #    self.connection.commit()
+        #    out = {'CoinName': coinname,'CoinAbv':abv,'CoinTicker':ticker}
+        #except Exception as e:
+        #    print(e)
+        #    logging.error(f'Could not write to the DB: {e}.')
+        #else:
+        #    self.connection.rollback()
+        
+        #return out
 
     def get_valid_coins(self):
         """
@@ -193,18 +241,40 @@ class Database:
         OUTPUT: out_list of tuples
         NOTe: 
         """
+        out = []
+        rows = []
+
         try:
-            self.cursor.execute("SELECT * FROM ValidCoins")
-            rows = self.cursor.fetchall()
+            self.pgcur.execute("SELECT * FROM validCoins")
+            rows = self.pgcur.fetchall()
         except Exception as e:
+            self.pgconn.rollback()   # rollback in case the SELECT was inside a transaction
             print(e)
             logging.error(f'Could not list the ValidCoins: {e}.')
-        
-        out = []
+
         for row in rows:
-            out.append({'id':row[0],'coin_name':row[1],'coin_abv':row[2],'coin_ticker':row[3]})
+            out.append({
+                'id': row[0],
+                'coin_name': row[1],
+                'coin_abv': row[2],
+                'coin_ticker': row[3]
+            })
 
         return out
+
+        
+        #try:
+        #    self.cursor.execute("SELECT * FROM ValidCoins")
+        #    rows = self.cursor.fetchall()
+        #except Exception as e:
+        #    print(e)
+        #    logging.error(f'Could not list the ValidCoins: {e}.')
+        
+        #out = []
+        #for row in rows:
+        #    out.append({'id':row[0],'coin_name':row[1],'coin_abv':row[2],'coin_ticker':row[3]})
+
+        #return out
     
     def get_coin(self,coinname=None,coinid=None):
         """
@@ -215,19 +285,47 @@ class Database:
                          - ask
                          - volume
         """
-        #make sure the coin name is capitalized.
         coinname = coinname.capitalize()
+        out = {}
 
         try:
-            self.cursor.execute(f"SELECT * FROM ValidCoins WHERE CoinName='{coinname}'")
-            row = self.cursor.fetchone()
+            sql = "SELECT ID, CoinName, CoinAbv, CoinTicker FROM validCoins WHERE CoinName = %s"
+            self.pgcur.execute(sql, (coinname,))
+            row = self.pgcur.fetchone()
+            
+            if row:
+                out = {
+                    'index': row[0],
+                    'coin_name': row[1],
+                    'coin_abv': row[2],
+                    'coin_ticker': row[3]
+                }
+            else:
+                logging.warning(f"No entry found in ValidCoins for coin: {coinname}")
+                out = None
+
         except Exception as e:
+            self.pgconn.rollback()
             print(e)
-            logging.error(f"Could not find {coinname} the ValidCoins: {e}.")
-    
-        out = {'index':row[0],'coin_name':row[1],'coin_abv':row[2],'coin_ticker':row[3]}
+            logging.error(f"Could not find {coinname} in ValidCoins: {e}.")
+            out = None
 
         return out
+
+        
+        #make sure the coin name is capitalized.
+        #coinname = coinname.capitalize()
+
+        #try:
+        #    self.cursor.execute(f"SELECT * FROM ValidCoins WHERE CoinName='{coinname}'")
+        #    row = self.cursor.fetchone()
+        #except Exception as e:
+        #    print(e)
+        #    logging.error(f"Could not find {coinname} the ValidCoins: {e}.")
+    
+        #out = {'index':row[0],'coin_name':row[1],'coin_abv':row[2],'coin_ticker':row[3]}
+
+        #return out
 
     def delete_coin(self,coinname=None,coinid=None):
         """
@@ -239,16 +337,17 @@ class Database:
         coinname = coinname.capitalize()
 
         try:
-            self.cursor.execute(f"DELETE FROM ValidCoins WHERE CoinName='{coinname}' AND ID='{coinid}'")
-            self.connection.commit()
+            self.pgcur.execute(f"DELETE FROM validCoins WHERE CoinName='{coinname}' AND ID='{coinid}'")
+            self.pgconn.commit()
         except Exception as e:
             print(e)
             logging.error(f'Could not delete the id: {e}.')
-            self.connection.rollback()
+            self.pgconn.rollback()
             return {'coinname':coinname,'success':False}
         else:
             return {'coinname':coinname,'success':True}
     
+    '''
     def trim_db(self,keep):
         """
         DESC: Keep only the entries greater than or equal to the keep variable
@@ -267,7 +366,7 @@ class Database:
             self.connection.rollback()
         
         return True
-
+    '''
     #Portfolio transactions
 
     def add_portfolio(self,input_dict):
@@ -278,20 +377,42 @@ class Database:
                          - Success true/false
         """
         pname = str(input_dict['portfolio_name']).capitalize()
-        print(type(pname))
-        out = {'portfolio_name': pname,'success': False}
+        out = {'portfolio_name': pname, 'success': False}
 
         try:
-            self.cursor.execute("INSERT OR REPLACE INTO Portfolios (PortfolioName) VALUES (?)",(pname,))
-            self.connection.commit()
-            out = {'portfolio_name': input_dict['portfolio_name'],'success':True}
+            sql = """
+                INSERT INTO portfolios (PortfolioName)
+                VALUES (%s)
+                ON CONFLICT (PortfolioName) DO UPDATE
+                SET PortfolioName = EXCLUDED.PortfolioName
+            """
+            self.pgcur.execute(sql, (pname,))
+            self.pgconn.commit()
+
+            out = {'portfolio_name': pname, 'success': True}
+
         except Exception as e:
+            self.pgconn.rollback()
             print(e)
             logging.error(f'Could not write to the DB: {e}.')
-        else:
-            self.connection.rollback()
 
         return out
+        
+        #pname = str(input_dict['portfolio_name']).capitalize()
+        #print(type(pname))
+        #out = {'portfolio_name': pname,'success': False}
+
+        #try:
+        #    self.cursor.execute("INSERT OR REPLACE INTO Portfolios (PortfolioName) VALUES (?)",(pname,))
+        #    self.connection.commit()
+        #    out = {'portfolio_name': input_dict['portfolio_name'],'success':True}
+        #except Exception as e:
+        #    print(e)
+        #    logging.error(f'Could not write to the DB: {e}.')
+        #else:
+        #    self.connection.rollback()
+
+        #return out
 
     def get_portfolios(self):
         """
@@ -300,16 +421,32 @@ class Database:
         """
         out = []
         try:
-            self.cursor.execute(f"SELECT * FROM Portfolios")
-            rows = self.cursor.fetchall()
+            sql = "SELECT ID, portfolioName FROM Portfolios"
+            self.pgcur.execute(sql)
+            rows = self.pgcur.fetchall()
+
+            for row in rows:
+                out.append({'id': row[0], 'portfolio_name': row[1]})
+
         except Exception as e:
+            self.pgconn.rollback()
             print(e)
             logging.error(f"Could not list the Portfolios: {e}.")
-        
-        for row in rows:
-            out.append({'id':row[0],'portfolio_name':row[1]})
 
         return out
+
+        #out = []
+        #try:
+        #    self.cursor.execute(f"SELECT * FROM Portfolios")
+        #    rows = self.cursor.fetchall()
+        #except Exception as e:
+        #    print(e)
+        #    logging.error(f"Could not list the Portfolios: {e}.")
+        
+        #for row in rows:
+        #    out.append({'id':row[0],'portfolio_name':row[1]})
+
+        #return out
 
     def delete_portfolio(self,name):
         """
@@ -319,27 +456,57 @@ class Database:
                          - Success true/false
         """
         portfolioname = str(name).capitalize()
+        out = {'portfolio_name': portfolioname, 'success': False}
+
+        try:
+            # Start a transaction block
+            # 1. Delete portfolio coins
+            self.pgcur.execute(
+                "DELETE FROM portfolioCoins WHERE PortfolioName = %s",
+                (portfolioname,)
+            )
+
+            # 2. Delete portfolio itself
+            self.pgcur.execute(
+                "DELETE FROM portfolios WHERE PortfolioName = %s",
+                (portfolioname,)
+            )
+
+            # Commit both deletes as a single transaction
+            self.pgconn.commit()
+
+            out['success'] = True
+
+        except Exception as e:
+            self.pgconn.rollback()
+            print(e)
+            logging.error(f"Could not delete portfolio {portfolioname}: {e}")
+
+        return out
+
+        
+        #portfolioname = str(name).capitalize()
 
         #clear out the portfolio coins
-        try:
-            self.cursor.execute(f"DELETE FROM PortfolioCoins WHERE PortfolioName='{portfolioname}'")
-            self.connection.commit()
-        except Exception as e:
-            print(e)
-            logging.error(f'Could not delete coin from Portfolio: {e}.')
-            self.connection.rollback()
-            return {'portfolio_name': portfolioname,'success': False}
+        #try:
+        #    self.cursor.execute(f"DELETE FROM PortfolioCoins WHERE PortfolioName='{portfolioname}'")
+        #    self.connection.commit()
+        #except Exception as e:
+        #    print(e)
+        #    logging.error(f'Could not delete coin from Portfolio: {e}.')
+        #    self.connection.rollback()
+        #    return {'portfolio_name': portfolioname,'success': False}
         
-        try:
-            self.cursor.execute(f"DELETE FROM Portfolios WHERE PortfolioName='{portfolioname}'")
-            self.connection.commit()
-        except Exception as e:
-            print(e)
-            logging.error(f'Could not delete the Portfolio: {e}.')
-            self.connection.rollback()
-            return {'portfolio_name': portfolioname,'success': False}
-        else:
-            return {'portfolio_name': portfolioname,'success': True}
+        #try:
+        #    self.cursor.execute(f"DELETE FROM Portfolios WHERE PortfolioName='{portfolioname}'")
+        #    self.connection.commit()
+        #except Exception as e:
+        #    print(e)
+        #    logging.error(f'Could not delete the Portfolio: {e}.')
+        #    self.connection.rollback()
+        #    return {'portfolio_name': portfolioname,'success': False}
+        #else:
+        #    return {'portfolio_name': portfolioname,'success': True}
 
     def add_portfolio_coin(self,input_dict):
         """
@@ -351,23 +518,52 @@ class Database:
         """
         portfolioname = str(input_dict['portfolioName']).capitalize()
         coinname = str(input_dict['coinName']).capitalize()
-        out = {'coin_name': coinname,'success': False}
+        out = {'coin_name': coinname, 'success': False}
 
-        if(self.get_portfolio(portfolioname)['Success'] != False):
-            logging.error(f'Could not find the portfolio: {portfolioname}.')
+        # Check if portfolio exists
+        portfolio = self.get_portfolio(portfolioname)
+        if not portfolio or not portfolio.get('success', False):
+            logging.error(f"Could not find the portfolio: {portfolioname}.")
             return out
 
         try:
-            self.cursor.execute("INSERT OR REPLACE INTO PortfolioCoins (PortfolioName,CoinName) VALUES (?,?)",(portfolioname,coinname))
-            self.connection.commit()
-            out = {'coin_name': coinname,'success':True}
+            sql = """
+                INSERT INTO portfolioCoins (PortfolioName, CoinName)
+                VALUES (%s, %s)
+                ON CONFLICT (PortfolioName, CoinName)
+                DO UPDATE SET CoinName = EXCLUDED.CoinName
+            """
+            self.pgcur.execute(sql, (portfolioname, coinname))
+            self.pgconn.commit()
+            out = {'coin_name': coinname, 'success': True}
+
         except Exception as e:
+            self.pgconn.rollback()
             print(e)
-            logging.error(f'Could not write to the DB: {e}.')
-        else:
-            self.connection.rollback()
-        
+            logging.error(f"Could not write to the DB: {e}.")
+
         return out
+
+        
+        #portfolioname = str(input_dict['portfolioName']).capitalize()
+        #coinname = str(input_dict['coinName']).capitalize()
+        #out = {'coin_name': coinname,'success': False}
+
+        #if(self.get_portfolio(portfolioname)['Success'] != False):
+        #    logging.error(f'Could not find the portfolio: {portfolioname}.')
+        #    return out
+
+        #try:
+        #    self.cursor.execute("INSERT OR REPLACE INTO PortfolioCoins (PortfolioName,CoinName) VALUES (?,?)",(portfolioname,coinname))
+        #    self.connection.commit()
+        #    out = {'coin_name': coinname,'success':True}
+        #except Exception as e:
+        #    print(e)
+        #    logging.error(f'Could not write to the DB: {e}.')
+        #else:
+        #    self.connection.rollback()
+        
+        #return out
 
     def delete_portfolio_coin(self,input_dict):
         """
@@ -380,38 +576,82 @@ class Database:
         """
         portfolioname = str(input_dict['portfolio_name']).capitalize()
         coinname = str(input_dict['coin_name']).capitalize()
-        out = {'coin_name': coinname,'success': False}
+        out = {'coin_name': coinname, 'success': False}
 
-        if(self.get_portfolio(portfolioname)['success'] != False):
-            logging.error(f'Could not find the portfolio: {portfolioname}.')
+        # Check if portfolio exists
+        portfolio = self.get_portfolio(portfolioname)
+        if not portfolio or not portfolio.get('success', False):
+            logging.error(f"Could not find the portfolio: {portfolioname}.")
             return out
 
-        #clear out the portfolio coins
+        # Clear out the portfolio coins
         try:
-            self.cursor.execute(f"DELETE FROM PortfolioCoins WHERE CoinName='{coinname}' AND PortfolioName='{portfolioname}'")
-            self.connection.commit()
-            out = {'coin_name': portfolioname,'success': True}
+            sql = "DELETE FROM portfolioCoins WHERE CoinName = %s AND PortfolioName = %s"
+            self.pgcur.execute(sql, (coinname, portfolioname))
+            self.pgconn.commit()
+            out = {'coin_name': coinname, 'success': True}
         except Exception as e:
             print(e)
-            logging.error(f'Could not delete coin from Portfolio: {e}.')
-            self.connection.rollback()
-        
+            logging.error(f"Could not delete coin from Portfolio: {e}.")
+            self.pgconn.rollback()
+
         return out
+
+        #portfolioname = str(input_dict['portfolio_name']).capitalize()
+        #coinname = str(input_dict['coin_name']).capitalize()
+        #out = {'coin_name': coinname,'success': False}
+
+        #if(self.get_portfolio(portfolioname)['success'] != False):
+        #    logging.error(f'Could not find the portfolio: {portfolioname}.')
+        #    return out
+
+        #clear out the portfolio coins
+        #try:
+        #    self.cursor.execute(f"DELETE FROM PortfolioCoins WHERE CoinName='{coinname}' AND PortfolioName='{portfolioname}'")
+        #    self.connection.commit()
+        #    out = {'coin_name': portfolioname,'success': True}
+        #except Exception as e:
+        #    print(e)
+        #    logging.error(f'Could not delete coin from Portfolio: {e}.')
+        #    self.connection.rollback()
+        
+        #return out
 
     def get_portfolio(self,name):
         """
         DESC: Get a portfolio value and and the coins
         """
         portfolioname = str(name).capitalize()
-        out = {'success':False,'portfolio_name':None}
+        out = {'success': False, 'portfolio_name': None}
 
         try:
-            self.cursor.execute(f"SELECT * FROM Portfolios WHERE PortfolioName='{portfolioname}'")
-            row = self.cursor.fetchall()
-            print(row)
-            out = {'success':True,'portfolio_name':portfolioname}
+            sql = "SELECT ID, PortfolioName FROM portfolios WHERE PortfolioName = %s"
+            self.pgcur.execute(sql, (portfolioname,))
+            row = self.pgcur.fetchone()
+
+            if row:
+                out = {'success': True, 'portfolio_name': portfolioname}
+            else:
+                logging.warning(f"Portfolio {portfolioname} not found.")
+
         except Exception as e:
+            self.pgconn.rollback()
             print(e)
             logging.error(f"Could not find {portfolioname} in Portfolios: {e}.")
-        
+
         return out
+
+
+        #portfolioname = str(name).capitalize()
+        #out = {'success':False,'portfolio_name':None}
+
+        #try:
+        #    self.cursor.execute(f"SELECT * FROM Portfolios WHERE PortfolioName='{portfolioname}'")
+        #    row = self.cursor.fetchall()
+        #    print(row)
+        #    out = {'success':True,'portfolio_name':portfolioname}
+        #except Exception as e:
+        #    print(e)
+        #    logging.error(f"Could not find {portfolioname} in Portfolios: {e}.")
+        
+        #return out

@@ -1,11 +1,9 @@
-import subprocess
 import psycopg2
-#import schedule
-import settings
 import logging
-#from database import Database
+import settings
 
-#db = Database()
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 def init_db():
     try:
@@ -18,6 +16,44 @@ def init_db():
             port=settings.PGSQL_PORT
         )
         cursor = conn.cursor()
+
+        '''
+        # 🔹 Create tables
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS validCoins (
+            ID SERIAL PRIMARY KEY,
+            CoinName TEXT NOT NULL,
+            CoinAbv TEXT UNIQUE NOT NULL,
+            CoinTicker TEXT
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS cryptoHistory (
+            ID SERIAL PRIMARY KEY,
+            coin TEXT NOT NULL,
+            timestamp TIMESTAMPTZ NOT NULL,
+            price NUMERIC
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS portfolios (
+            ID SERIAL PRIMARY KEY,
+            PortfolioName TEXT UNIQUE NOT NULL
+        );
+        """)
+
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS portfolioCoins (
+            ID SERIAL PRIMARY KEY,
+            CoinName TEXT NOT NULL,
+            PortfolioName TEXT NOT NULL,
+            UNIQUE (CoinName, PortfolioName)
+        );
+        """)
+        '''
+
 
         # 🔹 Insert seed data
         cursor.execute("""
@@ -61,13 +97,5 @@ def init_db():
         if conn:
             conn.close()
 
-
 if __name__ == "__main__":
     init_db()
-
-    args = ['bash','entrypoint.sh']
-    out = subprocess.Popen(args, stdout=subprocess.PIPE)
-    # Run the command
-    output = out.communicate()[0]
-
-    #schedule.every().day.at(settings.TRIM).do(db.trim_db(settings.KEEP))

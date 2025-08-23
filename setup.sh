@@ -1,4 +1,6 @@
 #!/bin/bash
+#this is out of date anduse sqlite3
+
 
 #setup on the local machine for test and dev
 #source your env variables first

@@ -50,8 +50,11 @@ def main():
             pr.current_price(coin)
             print('\n')
             db.write_to_history(coin)
-        
-            granularity = ['60','300','900','3600']
+
+            #granularity = ['60','300','900','3600']
+            granularity = ['60']
+            
+            #remove old entries over a year old.
             db.delete_old_pg_entries(valcoin['coin_ticker'])
             for gran in granularity: 
                 logging.info(f"Getting candles for {valcoin['coin_ticker']} with granularity {gran}")
@@ -61,6 +64,7 @@ def main():
                                 'coin_name':valcoin['coin_name'],
                                 'granularity':gran
                                 })
+
                 logging.info(f"Calculating MACD for {valcoin['coin_ticker']} with granularity {gran}")
                 md = cr.coin_macd(cs)
                 logging.info(md)

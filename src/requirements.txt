@@ -8,7 +8,7 @@ Flask-HTTPAuth==4.5.0
 requests==2.28.0
 itsdangerous==2.0.0
 schedule==1.2.1
-sqlite-web==0.6.3
+#sqlite-web==0.6.3
 psycopg2-binary==2.9.10
 SQLAlchemy==2.0.30
 numpy==1.24.3
