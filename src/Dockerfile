@@ -17,6 +17,8 @@ RUN pip3 install -r /requirements.txt
 COPY ./nginx-default.conf /nginx-default.conf
 
 ADD coinbase.py $INSTALL_PATH
+ADD macd.py $INSTALL_PATH
+ADD candles.py $INSTALL_PATH
 ADD crypto_lib.py $INSTALL_PATH
 ADD run_app.py $INSTALL_PATH
 ADD entrypoint.sh $INSTALL_PATH

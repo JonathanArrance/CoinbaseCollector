@@ -36,6 +36,21 @@ class Crypto:
 
         return response
 
+    def buy_sell_signal():
+        """
+        DESC: generate the a buy or sell signal based on MACD
+        INPUT: None 
+        """
+        MACD = None
+        SIGNAL = None
+
+        if MACD > SIGNAL:
+            return 'BUY'
+        elif MACD < SIGNAL:
+            return 'SELL'
+        else:
+            return 'HOLD'
+
     def get_coin_catalog(self):
         """
         DESC: Get a list of available coins from the source of truth
@@ -74,20 +89,6 @@ class Crypto:
                          - coin_ticker
                          
         this needs to be fixed. need to account for the floats properly and format the output.
-
-        Traceback (most recent call last):
-        File "/opt/crypto/coinbase.py", line 31, in <module>
-            main()
-        File "/opt/crypto/coinbase.py", line 25, in main
-            pr.current_price(coin)
-        File "/opt/crypto/prom_lib.py", line 31, in current_price
-            self.coin_bid.labels(input_dict['ticker'],input_dict['coin']).set(input_dict['bid'])
-        File "/usr/local/lib/python3.11/dist-packages/prometheus_client/metrics.py", line 396, in set
-            self._value.set(float(value))
-                            ^^^^^^^^^^^^
-        TypeError: float() argument must be a string or a real number, not 'NoneType'
-
-        
         """
         url = f"https://api.exchange.coinbase.com/products/{input_dict['coin_ticker']}/ticker"
         

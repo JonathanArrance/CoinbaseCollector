@@ -1,31 +1,21 @@
 from crypto_lib import Crypto
-from prom_lib import prometheus as prom
 from database import Database
 import time
-import settings
+import logging
 
 def main():
 
     db = Database()
-    pr = prom()
     cr = Crypto()
-
-    pr.start_server()
 
     while True:
         valid_coins = db.get_coins()
         for valcoin in valid_coins:
-            coin = cr.get_coin_price(valcoin)
-            pr.current_price(coin)
-            print('\n')
-            db.write_to_history(coin)
-
             #granularity = ['60','300','900','3600']
             granularity = ['60']
             
             #remove old entries over a year old.
             #db.delete_old_pg_entries(valcoin['coin_ticker'])
-            """
             for gran in granularity: 
                 logging.info(f"Getting candles for {valcoin['coin_ticker']} with granularity {gran}")
                 cs = cr.get_candles({'coin_ticker':valcoin['coin_ticker'],'granularity':gran})
@@ -35,26 +25,7 @@ def main():
                                 'granularity':gran
                                 })
 
-                logging.info(f"Calculating MACD for {valcoin['coin_ticker']} with granularity {gran}")
-                md = cr.coin_macd(cs)
-                logging.info(md)
-                db.insert_macd({'macd_df':md,
-                                'coin_ticker':valcoin['coin_ticker'],
-                                'coin_name':valcoin['coin_name'],
-                                'granularity':gran
-                                })
-                time.sleep(1)
-            """
-
-            time.sleep(settings.COINBASE_INTERVAL)
+            time.sleep(43200)
 
 if __name__ == '__main__':
     main()
-
-
-
-"""
-ERROR:root:float() argument must be a string or a real number, not 'NoneType'
-ERROR:root:Could not emit coin metrics.
-
-"""
