@@ -18,6 +18,7 @@ def main():
             #db.delete_old_pg_entries(valcoin['coin_ticker'])
             for gran in granularity: 
                 logging.info(f"Calculating MACD for {valcoin['coin_ticker']} with granularity {gran}")
+                cs = cr.get_candles({'coin_ticker':valcoin['coin_ticker'],'granularity':gran})
                 md = cr.coin_macd(cs)
                 logging.info(md)
                 db.insert_macd({'macd_df':md,
