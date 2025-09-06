@@ -2,6 +2,7 @@ from crypto_lib import Crypto
 from database import Database
 import time
 import logging
+import settings
 
 def main():
 
@@ -25,7 +26,7 @@ def main():
                                 'granularity':gran
                                 })
 
-            time.sleep(43200)
+        time.sleep(settings.CANDLE_INTERVAL)
 
 if __name__ == '__main__':
     main()

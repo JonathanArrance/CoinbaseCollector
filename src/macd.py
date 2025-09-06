@@ -2,11 +2,13 @@ from crypto_lib import Crypto
 from database import Database
 import time
 import logging
+import settings
 
 def main():
 
     db = Database()
     cr = Crypto()
+
 
     while True:
         valid_coins = db.get_coins()
@@ -26,7 +28,7 @@ def main():
                                 'coin_name':valcoin['coin_name'],
                                 'granularity':gran
                                 })
-            time.sleep(43200)
+        time.sleep(settings.MACD_INTERVAL)
 
 if __name__ == '__main__':
     main()
