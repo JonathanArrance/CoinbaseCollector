@@ -52,14 +52,6 @@ class ListCoins(Resource):
 class GetCoin(Resource):
     #@auth.login_required
     def get(self,coin):
-        #Get the Coin info, current coin price, and history froom the db.
-        
-        #catalog = cr.get_coin_catalog()
-        #coinname = coin.capitalize()
-        #for x in coinname:
-        #    if x['display_name'] == str(coinname).upper():
-        #        out['quote_increment'] = x['quote_increment']
-        #        out['coin_status'] = x['status']
         
         return jsonify(db.get_coin(coin))
 
@@ -106,6 +98,18 @@ class CryptoPrice(Resource):
                 abort(400)
 
         return jsonify(prices)
+
+@ns1.route('/refresh_candels')
+class Candles(Resource):
+    #@auth.login_required
+    def get(self):
+        pass
+
+@ns1.route('/refresh_macd')
+class Macd(Resource):
+    #@auth.login_required
+    def get(self):
+        pass
 
 ##portfolio
 @ns3.route('/list')

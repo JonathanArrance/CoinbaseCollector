@@ -8,7 +8,9 @@ from datetime import datetime
 class Database:
 
     def __init__(self):
-        
+        pass
+
+    def open_pg_connection(self):
         try:
             self.pgconn = psycopg2.connect(**settings.PG_CONFIG)
             logging.info("Connected to the PostgreSQL DB.")
@@ -19,6 +21,10 @@ class Database:
         #establish a pgsql cursor
         self.pgcur = self.pgconn.cursor()
 
+    def close_pg_connection(self):
+        logging.info("Closing the PostgreSQL DB connection.")
+        self.pgconn.close()
+    
     def delete_old_pg_entries(self,ticker):
         """
         DESC: Delete entries in the PostgreSQL database that are older than a year.
@@ -123,9 +129,6 @@ class Database:
         #cur.close()
         #self.pgconn.close()
         return True
-
-    def close_pg_connection(self):
-        self.pgconn.close()
     
     def write_to_history(self,input_dict):
 
@@ -210,7 +213,6 @@ class Database:
             self.pgcur.execute("SELECT * FROM validCoins")
             rows = self.pgcur.fetchall()
         except Exception as e:
-            self.pgconn.rollback()   # rollback in case the SELECT was inside a transaction
             print(e)
             logging.error(f'Could not list the ValidCoins: {e}.')
 
@@ -224,7 +226,6 @@ class Database:
 
         return out
 
-    
     def get_coin(self,coinname=None,coinid=None):
         """
         DESC: Get the coin specifics and price history
@@ -254,7 +255,6 @@ class Database:
                 out = None
 
         except Exception as e:
-            self.pgconn.rollback()
             print(e)
             logging.error(f"Could not find {coinname} in ValidCoins: {e}.")
             out = None

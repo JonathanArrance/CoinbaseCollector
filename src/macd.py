@@ -11,6 +11,7 @@ def main():
 
 
     while True:
+        db.open_pg_connection()
         valid_coins = db.get_coins()
         for valcoin in valid_coins:
             #granularity = ['60','300','900','3600']
@@ -28,6 +29,7 @@ def main():
                                 'coin_name':valcoin['coin_name'],
                                 'granularity':gran
                                 })
+        db.close_pg_connection()
         time.sleep(settings.MACD_INTERVAL)
 
 if __name__ == '__main__':

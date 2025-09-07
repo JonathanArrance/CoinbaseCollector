@@ -124,6 +124,13 @@ class Crypto:
                granularity - 60,300,21600,86400 (1 minute, 5 minutes, 6 hours, 1 day)
         OUTPUT: DataFrame - candles with columns: timestamp, low, high, open, close, volume
         """
+        if input_dict['granularity'] not in ['60','300','900','3600','21600','86400']:
+            print("Invalid granularity. Must be one of: 60,300,900,3600,21600,86400")
+            input_dict['granularity'] = '60'
+        
+        if 'granularity' not in input_dict:
+            input_dict['granularity'] = '60'
+
         url = f"https://api.exchange.coinbase.com/products/{input_dict['coin_ticker']}/candles"
         
         params = {'granularity': input_dict['granularity']}
