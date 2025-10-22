@@ -1,6 +1,7 @@
 from crypto_lib import Crypto
 from prom_lib import prometheus as prom
 from database import Database
+import schedule
 import time
 import settings
 

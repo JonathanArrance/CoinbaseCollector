@@ -3,7 +3,7 @@ FROM nginx:1.25.4
 
 ENV INSTALL_PATH=/opt/crypto
 
-RUN apt-get update -y;apt-get install -y curl;apt-get install -y python;apt install -y sqlite3;apt-get install -y python3-pip;apt install -y python3-dev;apt install -y vim;apt install -y htop
+RUN apt-get update -y;apt-get install -y curl;apt-get install -y python;apt-get install -y python3-pip;apt install -y python3-dev;apt install -y vim;apt install -y htop
 
 WORKDIR $INSTALL_PATH
 
@@ -16,9 +16,10 @@ RUN pip3 install -r /requirements.txt
 
 COPY ./nginx-default.conf /nginx-default.conf
 
-ADD coinbase.py $INSTALL_PATH
-ADD macd.py $INSTALL_PATH
-ADD candles.py $INSTALL_PATH
+#ADD coinbase.py $INSTALL_PATH
+#ADD macd.py $INSTALL_PATH
+#ADD candles.py $INSTALL_PATH
+ADD scheduler.py $INSTALL_PATH
 ADD crypto_lib.py $INSTALL_PATH
 ADD run_app.py $INSTALL_PATH
 ADD entrypoint.sh $INSTALL_PATH

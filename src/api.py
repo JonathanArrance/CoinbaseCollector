@@ -46,14 +46,19 @@ class Catalog(Resource):
 class ListCoins(Resource):
     #@auth.login_required
     def get(self):
-        return jsonify(db.get_coins())
+        db.open_pg_connection()
+        coins = db.get_coins()
+        db.close_pg_connection()
+        return jsonify(coins)
         
 @ns1.route('/getcoin/<coin>')
 class GetCoin(Resource):
     #@auth.login_required
     def get(self,coin):
-        
-        return jsonify(db.get_coin(coin))
+        db.open_pg_connection()
+        coin = db.get_coin(coin)
+        db.close_pg_connection()
+        return jsonify(coin)
 
 @ns1.route('/addcoin')
 class AddCoin(Resource):
@@ -65,10 +70,12 @@ class AddCoin(Resource):
     
     #@auth.login_required
     def post(self):
-        #args = parser.parse_args()
         args = AddCoin.parser.parse_args()
         try:
-            return jsonify(db.add_coin(args))
+            db.open_pg_connection()
+            coins = db.add_coin(args)
+            db.close_pg_connection()
+            return jsonify(coins)
         except Exception as e:
             logging.error(e)
             abort(400)
@@ -78,18 +85,21 @@ class DeleteCoin(Resource):
     #@auth.login_required
     def delete(self,coin_name,coin_id):
         #Remove the coin from the database
-        return jsonify(db.delete_coin(coin_name,coin_id))
+        db.open_pg_connection()
+        delete = db.delete_coin(coin_name,coin_id)
+        db.close_pg_connection()
+        return jsonify(delete)
 
 @ns1.route('/currentprice')
 class CryptoPrice(Resource):
     #@auth.login_required
     def get(self):
-        
+        db.open_pg_connection()
         outs = db.get_coins()
+        db.close_pg_connection()
 
         prices = []
         for out in outs:
-
             try:
                 p = cr.get_coin_price(out)
                 prices.append(p)
@@ -116,13 +126,19 @@ class Macd(Resource):
 class ListPortfolio(Resource):
     #@auth.login_required
     def get(self):
-        return jsonify(db.get_portfolios())
+        db.open_pg_connection()
+        p = db.get_portfolios()
+        db.close_pg_connection()
+        return jsonify(p)
 
 @ns3.route('/get/<portfolio>')
 class GetPortfolio(Resource):
     #@auth.login_required
     def get(self,portfolio):
-        return jsonify(db.get_portfolio(portfolio))
+        db.open_pg_connection()
+        p = db.get_portfolio(portfolio)
+        db.close_pg_connection()
+        return jsonify(p)
 
 @ns3.route('/addportfolio')
 class AddPortfolio(Resource):
@@ -135,7 +151,10 @@ class AddPortfolio(Resource):
         args = AddPortfolio.parser.parse_args()
         print(args)
         try:
-            return jsonify(db.add_portfolio(args))
+            db.open_pg_connection()
+            p = db.add_portfolio(args)
+            db.close_pg_connection(p)
+            return jsonify()
         except Exception as e:
             logging.error(e)
             abort(400)
