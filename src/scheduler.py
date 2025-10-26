@@ -100,14 +100,18 @@ if __name__ == '__main__':
     pr = prom()
     pr.start_server()
 
-    schedule.every(settings.COINBASE_INTERVAL).seconds.do(run_threaded,coinbase_job)
+    #schedule.every(settings.COINBASE_INTERVAL).seconds.do(run_threaded,coinbase_job)
+    schedule.every(settings.COINBASE_INTERVAL).seconds.do(coinbase_job)
     #schedule.every().minute.at(":00").do(candle_job)
-    schedule.every(60).seconds.do(run_threaded,candle_job)
+    #schedule.every(settings.CANDLE_INTERVAL).seconds.do(run_threaded,candle_job)
+    schedule.every(settings.CANDLE_INTERVAL).seconds.do(candle_job)
     #schedule.every().minute.at(":30").do(macd_job)
-    schedule.every(30).seconds.do(run_threaded,macd_job)
+    #schedule.every(settings.MACD_INTERVAL).seconds.do(run_threaded,macd_job)
+    schedule.every(settings.MACD_INTERVAL).seconds.do(macd_job)
 
-    db.open_pg_connection()
+    #db.open_pg_connection()
     while True:
+        db.open_pg_connection()
         schedule.run_pending()
         time.sleep(1)
-    db.close_pg_connection()
+        db.close_pg_connection()
