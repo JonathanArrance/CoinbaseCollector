@@ -7,8 +7,9 @@ import schedule
 import time
 import settings
 
-#cr = Crypto()
-#db = Database()
+db = Database()
+cr = Crypto()
+pr = prom()
 
 def run_threaded(job_func):
     job_thread = threading.Thread(target=job_func)
@@ -95,9 +96,7 @@ def coinbase_job():
             #db.close_pg_connection()
 
 if __name__ == '__main__':
-    db = Database()
-    cr = Crypto()
-    pr = prom()
+    
     pr.start_server()
 
     #schedule.every(settings.COINBASE_INTERVAL).seconds.do(run_threaded,coinbase_job)

@@ -210,7 +210,7 @@ class Database:
         rows = []
 
         try:
-            self.pgcur.execute("SELECT * FROM validCoins")
+            self.pgcur.execute("SELECT * FROM validcoins")
             rows = self.pgcur.fetchall()
         except Exception as e:
             print(e)
