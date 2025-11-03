@@ -7,7 +7,7 @@ RUN apt-get update -y;apt-get install -y curl;apt-get install -y python;apt-get 
 
 WORKDIR $INSTALL_PATH
 
-RUN mkdir -p $INSTALL_PATH/db
+#RUN mkdir -p $INSTALL_PATH/db
 
 RUN mv /usr/lib/python3.11/EXTERNALLY-MANAGED /usr/lib/python3.11/EXTERNALLY-MANAGED.old
 
