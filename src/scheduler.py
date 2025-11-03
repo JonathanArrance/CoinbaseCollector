@@ -7,20 +7,17 @@ import schedule
 import time
 import settings
 
-db = Database()
-cr = Crypto()
-pr = prom()
-
 def run_threaded(job_func):
     job_thread = threading.Thread(target=job_func)
     job_thread.start()
 
 def macd_job():
-    
+
     while True:
+        db.open_pg_connection()
         try:
             logging.info("Starting MACD job cycle.")
-            #db.open_pg_connection()
+            print("Starting MACD Job Cycle")
             valid_coins = db.get_coins()
             for valcoin in valid_coins:
                 #granularity = ['60','300','900','3600']
@@ -39,17 +36,17 @@ def macd_job():
                                     'coin_name':valcoin['coin_name'],
                                     'granularity':gran
                                     })
-            #db.close_pg_connection()
         except Exception as e:
             logging.error(f"Error in macd_job: {e}")
             print(f"Error in macd_job: {e}")
-            #db.close_pg_connection()
+        db.close_pg_connection()
 
 def candle_job():
+    
     while True:
+        db.open_pg_connection()
         try:
             logging.info("Starting candle job cycle.")
-            #db.open_pg_connection()
             valid_coins = db.get_coins()
             for valcoin in valid_coins:
                 #granularity = ['60','300','900','3600']
@@ -69,18 +66,18 @@ def candle_job():
                                     'coin_name':valcoin['coin_name'],
                                     'granularity':gran
                                     })
-
-            #db.close_pg_connection()
         except Exception as e:
             logging.error(f"Error in candle_job: {e}")
             print(f"Error in candle_job: {e}")
-            #db.close_pg_connection()
+        
+        db.close_pg_connection()
 
 def coinbase_job():
+    
     while True:
+        db.open_pg_connection()        
         try:
             logging.info("Starting coinbase job cycle.")
-            #db.open_pg_connection()
             valid_coins = db.get_coins()
             for valcoin in valid_coins:
                 logging.info(f"Getting price for {valcoin}")
@@ -89,28 +86,30 @@ def coinbase_job():
                 print('\n')
                 db.write_to_history(coin)
                 time.sleep(settings.COINBASE_INTERVAL)
-            #db.close_pg_connection()
         except Exception as e:
             logging.error(f"Error in coinbase_job: {e}")
             print(f"Error in coinbase_job: {e}")
-            #db.close_pg_connection()
+        db.close_pg_connection()
 
 if __name__ == '__main__':
+
+    db = Database()
+    cr = Crypto()
+    pr = prom()
     
     pr.start_server()
 
     #schedule.every(settings.COINBASE_INTERVAL).seconds.do(run_threaded,coinbase_job)
     schedule.every(settings.COINBASE_INTERVAL).seconds.do(coinbase_job)
-    #schedule.every().minute.at(":00").do(candle_job)
-    #schedule.every(settings.CANDLE_INTERVAL).seconds.do(run_threaded,candle_job)
-    schedule.every(settings.CANDLE_INTERVAL).seconds.do(candle_job)
-    #schedule.every().minute.at(":30").do(macd_job)
-    #schedule.every(settings.MACD_INTERVAL).seconds.do(run_threaded,macd_job)
-    schedule.every(settings.MACD_INTERVAL).seconds.do(macd_job)
+    
+    schedule.every(settings.CANDLE_INTERVAL).seconds.do(run_threaded,candle_job)
+    #schedule.every(settings.CANDLE_INTERVAL).seconds.do(candle_job)
+    
+    schedule.every(settings.MACD_INTERVAL).seconds.do(run_threaded,macd_job)
+    #schedule.every(settings.MACD_INTERVAL).seconds.do(macd_job)
 
-    #db.open_pg_connection()
     while True:
-        db.open_pg_connection()
+        #db.open_pg_connection()
         schedule.run_pending()
         time.sleep(1)
-        db.close_pg_connection()
+        #db.close_pg_connection()
