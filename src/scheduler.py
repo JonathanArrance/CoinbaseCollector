@@ -14,6 +14,7 @@ def run_threaded(job_func):
 def macd_job():
 
     while True:
+        #open up the DB connection for writing
         db.open_pg_connection()
         try:
             logging.info("Starting MACD job cycle.")
